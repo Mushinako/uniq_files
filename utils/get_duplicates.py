@@ -1,4 +1,5 @@
 from math import ceil
+from shutil import get_terminal_size
 from pathlib import Path
 from hashlib import md5, sha1, sha512
 from collections import defaultdict
@@ -82,10 +83,13 @@ def get_file_properties(path: Path, id_: int, count: int) -> File_Property:
 
     num_of_chunks = ceil(size / CHUNK_SIZE)
 
+    file_counter = f"[File:{progress_str(id_, count)}]"
+
     with path.open("rb") as fp:
         for i in range(1, num_of_chunks + 1):
+            chunk_counter = f"[Chunk:{progress_str(i, num_of_chunks)}]"
             print(
-                f"\r\x1b[K[File:{progress_str(id_, count)}] {path.name} [Chunk:{progress_str(i, num_of_chunks)}]",
+                f"\r\x1b[K{file_counter} {path.name[:get_terminal_size().columns-4-len(file_counter)-len(chunk_counter)]} {chunk_counter}",
                 end="",
                 flush=True,
             )
