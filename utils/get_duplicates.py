@@ -1,4 +1,5 @@
 from math import ceil
+from json import dump as json_dump
 from shutil import get_terminal_size
 from pathlib import Path
 from hashlib import md5, sha1, sha512
@@ -114,9 +115,12 @@ def get_duplicates(base_path) -> List[Dict]:
 
     all_files: defaultdict[File_Property, List[str]] = defaultdict(list)
     print()
-    for id_, count, path in iter_walk(base_path):
-        properties = get_file_properties(path, id_, count)
-        all_files[properties].append(str(path))
+    try:
+        for id_, count, path in iter_walk(base_path):
+            properties = get_file_properties(path, id_, count)
+            all_files[properties].append(str(path))
+    except KeyboardInterrupt:
+        print("\r\x1b[KStopping...")
     print("\r\x1b[K")
     print()
 
@@ -143,5 +147,7 @@ def get_duplicates(base_path) -> List[Dict]:
     return duplicates_list
 
 
-def write_duplicates() -> None:
+def write_duplicates(json_path: str, duplication_data: List[Dict]) -> None:
     """"""
+    with open(json_path, "w") as json_fp:
+        json_dump(duplication_data, json_fp, indent=4)
