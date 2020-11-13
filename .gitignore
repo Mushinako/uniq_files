@@ -1,7 +1,6 @@
 **/.git/
 **/.vscode/
 **/__pycache__/
-test.json
-mushinako.json
-vc.json
-d.json
+**/*.json
+**/bak/
+!config.json
