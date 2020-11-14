@@ -64,3 +64,12 @@ def iter_walk(base_path: Path) -> Generator[Tuple[str, Path], None, None]:
         num_files = len(file_paths)
         for file_id, file_path in enumerate(file_paths):
             yield "[File " + progress_str(file_id + 1, num_files) + "] ", file_path
+
+
+def iter_walk_size(base_path: Path) -> int:
+    """"""
+    return sum(
+        path.stat().st_size
+        for _, file_paths in _os_walk_filtered(base_path)
+        for path in file_paths
+    )
