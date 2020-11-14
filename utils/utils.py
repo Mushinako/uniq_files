@@ -16,7 +16,9 @@ def progress_percent(finished_size: int, total_size: int) -> str:
 
 def process_str_len(shrink: str, *, prefix: str = "", postfix: str = "") -> str:
     """"""
-    shrinked = shrink[: get_terminal_size().columns - len(prefix) - len(postfix) - 4]
+    shrinked = shrink[
+        : int((get_terminal_size().columns - len(prefix) - len(postfix) - 4) * 0.8)
+    ]
     if shrinked != shrink:
         shrink = shrinked[:-3] + "..."
     return "\r\x1b[K" + prefix + shrink + postfix
