@@ -32,11 +32,13 @@ def parse_argv() -> _Args:
 def _prepare_argv(args: _Args) -> None:
     """"""
     if not args.base_path.is_dir():
-        raise FileNotFoundError(f"Not a directory: {args.base_path=}")
+        raise FileNotFoundError(f"`base_path` not a directory: {args.base_path}")
     if args.dup_json_path.exists() and not args.dup_json_path.is_file():
-        raise FileNotFoundError(f"Not a file: {args.dup_json_path=}")
+        raise FileNotFoundError(f"`dup_json_path` not a file: {args.dup_json_path}")
     if args.file_database_path.exists() and not args.file_database_path.is_file():
-        raise FileNotFoundError(f"Not a file: {args.file_database_path=}")
+        raise FileNotFoundError(
+            f"`file_database_path` not a file: {args.file_database_path}"
+        )
 
     args.dup_json_path.parent.mkdir(parents=True, exist_ok=True)
     args.file_database_path.parent.mkdir(parents=True, exist_ok=True)
