@@ -6,12 +6,12 @@ from shutil import get_terminal_size
 def progress_str(id_: int, count: int) -> str:
     """"""
     count_str = str(count)
-    return f"{str(id_).rjust(len(count_str))}/{count_str}"
+    return str(id_).rjust(len(count_str)) + "/" + str(count_str)
 
 
-def process_str_len(shrink: str, *, prefix: str = "", postfix: str = "") -> int:
+def process_str_len(shrink: str, *, prefix: str = "", postfix: str = "") -> str:
     """"""
-    shrinked = shrink[: get_terminal_size().columns - len(prefix) - len(postfix) - 2]
+    shrinked = shrink[: get_terminal_size().columns - len(prefix) - len(postfix) - 4]
     if shrinked != shrink:
-        shrink = shrinked[:-3]
-    return prefix + shrink + postfix
+        shrink = shrinked[:-3] + "..."
+    return "\r\x1b[K" + prefix + shrink + postfix

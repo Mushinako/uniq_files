@@ -21,7 +21,7 @@ class File_Property:
         return hash((self.md5_, self.sha1_, self.sha512_, self.size))
 
 
-def _os_walk_filtered(path: Path) -> Generator[Tuple[Path, List[Path]], None, None]:
+def _os_walk_filtered(path: Path) -> Generator[Tuple[str, List[Path]], None, None]:
     """"""
     dirs: List[Path] = []
     nondirs: List[Path] = []
@@ -49,7 +49,7 @@ def _os_walk_filtered(path: Path) -> Generator[Tuple[Path, List[Path]], None, No
     except PermissionError:
         return
 
-    yield path, nondirs
+    yield str(path), nondirs
 
     for subdir in dirs:
         yield from _os_walk_filtered(subdir)
@@ -60,7 +60,7 @@ def iter_walk(base_path: Path) -> Generator[Tuple[str, Path], None, None]:
     Iterate through all files that are descendants of `base_path`, recursively
     """
     for dir_path, file_paths in _os_walk_filtered(base_path):
-        print(process_str_len(dir_path, prefix="\r\x1b[KChecking directory "))
+        print(process_str_len(dir_path, prefix="Checking directory "))
         num_files = len(file_paths)
         for file_id, file_path in enumerate(file_paths):
-            yield progress_str(file_id + 1, num_files), file_path
+            yield "[File " + progress_str(file_id + 1, num_files) + "] ", file_path
