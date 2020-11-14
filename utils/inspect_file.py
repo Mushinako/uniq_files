@@ -83,8 +83,6 @@ def check_files(
 
     finished_size = 0
 
-    print()
-
     try:
         for file_progress, path in walker:
             file_data, finished_size = _get_file_properties(

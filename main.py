@@ -12,6 +12,7 @@ def main() -> None:
     # Read DB
     files_data = read_database(args.file_database_path)
     # Walk directory recursively
+    print("Calculating size...")
     total_size = iter_walk_size(args.base_path)
     walker = iter_walk(args.base_path)
     output_json_list, all_files = check_files(walker, files_data, total_size)
