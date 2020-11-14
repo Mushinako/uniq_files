@@ -12,8 +12,11 @@ def main() -> None:
     # Read DB
     files_data = read_database(args.file_database_path)
     # Walk directory recursively
+    total_size = sum(
+        f.stat().st_size for f in args.base_path.glob("**/*") if f.is_file()
+    )
     walker = iter_walk(args.base_path)
-    output_json_list, all_files = check_files(walker, files_data)
+    output_json_list, all_files = check_files(walker, files_data, total_size)
     # Write JSON
     write_json(args.dup_json_path, output_json_list)
     # Write DB
