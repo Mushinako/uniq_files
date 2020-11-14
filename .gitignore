@@ -2,5 +2,6 @@
 **/.vscode/
 **/__pycache__/
 **/*.json
+**/*.sqlite3
+**/*.db
 **/bak/
-!config.json

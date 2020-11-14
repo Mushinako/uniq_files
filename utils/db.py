@@ -3,7 +3,7 @@
 import sqlite3
 from pathlib import Path
 from contextlib import contextmanager
-from typing import Generator, List, Tuple
+from typing import Dict, Generator, List, Tuple
 
 from .inspect_file import File_Data
 
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
     size TEXT NOT NULL,
     last_modified TEXT NOT NULL,
     md5 TEXT NOT NULL,
-    sha1 TEXT NOT NULL,
+    sha1 TEXT NOT NULL
 );
 """
 TRUNCATE_TABLE_CMD = f"DELETE FROM {TABLE_NAME};"
@@ -29,7 +29,7 @@ VALUES (?, ?, ?, ?, ?);
 
 
 @contextmanager
-def open_database(path: Path) -> Generator[sqlite3.Connection, None, None]:
+def _open_database(path: Path) -> Generator[sqlite3.Connection, None, None]:
     """"""
     con = sqlite3.connect(path)
     try:
@@ -38,17 +38,24 @@ def open_database(path: Path) -> Generator[sqlite3.Connection, None, None]:
         con.close()
 
 
-def read_database(path: Path) -> List[Tuple[str, str, str, str, str]]:
+def read_database(path: Path) -> Dict[Path, File_Data]:
     """"""
-    with open_database(path) as con:
+    with _open_database(path) as con:
         with con:
             con.execute(CREATE_TABLE_CMD)
         cursor = con.execute(SELECT_TABLE_CMD)
-        return cursor.fetchall()
+        data: List[Tuple[str, str, str, str, str]] = cursor.fetchall()
+        return {
+            Path(path): File_Data(
+                Path(path), int(size), float(last_modified), md5, sha1
+            )
+            for path, size, last_modified, md5, sha1 in data
+        }
 
 
 def write_database(path: Path, data: List[File_Data]) -> None:
-    with open_database(path) as con:
+    """"""
+    with _open_database(path) as con:
         with con:
             con.execute(TRUNCATE_TABLE_CMD)
             con.executemany(
