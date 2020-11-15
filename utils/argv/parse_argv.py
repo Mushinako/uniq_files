@@ -2,7 +2,7 @@
 Module: Parsing command-line arguments
 
 Public Functions:
- - parse_argv {None -> _Args}
+    parse_argv {None -> _Args}
 """
 from __future__ import annotations
 from pathlib import Path
