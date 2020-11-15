@@ -60,7 +60,7 @@ def iter_walk(base_path: Path) -> Generator[Tuple[str, Path], None, None]:
     Iterate through all files that are descendants of `base_path`, recursively
     """
     for dir_path, file_paths in _os_walk_filtered(base_path):
-        print(process_str_len(dir_path, prefix="Checking directory "), end="")
+        print(process_str_len(dir_path, prefix="Checking directory "))
         num_files = len(file_paths)
         for file_id, file_path in enumerate(file_paths):
             yield "[File " + progress_str(file_id + 1, num_files) + "] ", file_path
