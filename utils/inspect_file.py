@@ -61,7 +61,6 @@ def _get_file_properties(
                     prefix=progress_percent(finished_size, total_size) + file_progress,
                     postfix=" [Chunk " + progress_str(i, num_chunks) + "]",
                 ),
-                end="",
             )
             md5.update(chunk)
             sha1.update(chunk)
