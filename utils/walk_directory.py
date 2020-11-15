@@ -72,4 +72,5 @@ def iter_walk_size(base_path: Path) -> int:
     for dir_path, file_paths in _os_walk_filtered(base_path):
         print(process_str_len(dir_path), end="\r")
         total_sum += sum(path.stat().st_size for path in file_paths)
+    print("\r\x1b[K")
     return total_sum

@@ -83,8 +83,6 @@ def check_files(
 
     finished_size = 0
 
-    print()
-
     try:
         for file_progress, path in walker:
             file_data, finished_size = _get_file_properties(
@@ -98,6 +96,8 @@ def check_files(
             all_files.append(file_data)
     except KeyboardInterrupt:
         print("\r\x1b[KStopping...")
+
+    print("\r\x1b[K")
 
     duplication_list: List[Tuple[int, str, str, List[str]]] = [
         (*properties, paths)
