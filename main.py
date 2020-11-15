@@ -10,6 +10,7 @@ def main() -> None:
     # Parse command-line arguments
     args = parse_argv()
     # Read DB
+    print("Reading DB...")
     files_data = read_database(args.file_database_path)
     # Walk directory recursively
     print("Calculating size...")
@@ -17,8 +18,10 @@ def main() -> None:
     walker = iter_walk(args.base_path)
     output_json_list, all_files = check_files(walker, files_data, total_size)
     # Write JSON
+    print("Writing JSON...")
     write_json(args.dup_json_path, output_json_list)
     # Write DB
+    print("Writing DB...")
     write_database(args.file_database_path, all_files)
 
 
