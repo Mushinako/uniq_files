@@ -1,10 +1,12 @@
 """
 """
+import zipfile
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Generator, List, Tuple
+from typing import Callable, Dict, Generator, List, Tuple, Union
 
 from .config import WHITELIST
+from .type_parser import DIRECTORY_EXT
 from .utils import progress_str, process_str_len
 
 
@@ -21,9 +23,14 @@ class File_Property:
         return hash((self.md5_, self.sha1_, self.sha512_, self.size))
 
 
-def _os_walk_filtered(path: Path) -> Generator[Tuple[str, List[Path]], None, None]:
+def _os_walk_filtered(
+    path: Path,
+) -> Generator[Tuple[str, Union[List[Path], List[zipfile.Path]]], None, None]:
     """"""
     dirs: List[Path] = []
+    dirfiles: Dict[
+        Path, Callable[[Path], Generator[Tuple[str, List[zipfile.Path]], None, None]]
+    ] = {}
     nondirs: List[Path] = []
 
     try:
@@ -36,6 +43,14 @@ def _os_walk_filtered(path: Path) -> Generator[Tuple[str, List[Path]], None, Non
                 if subpath in WHITELIST.dirpaths:
                     continue
                 dirs.append(subpath)
+            elif subpath.suffix in DIRECTORY_EXT:
+                if subpath.is_symlink():
+                    continue
+                if subpath.name in WHITELIST.dirnames:
+                    continue
+                if subpath in WHITELIST.dirpaths:
+                    continue
+                dirfiles[subpath] = DIRECTORY_EXT[subpath.suffix]
             else:
                 if subpath.name in WHITELIST.filenames:
                     continue
@@ -55,7 +70,9 @@ def _os_walk_filtered(path: Path) -> Generator[Tuple[str, List[Path]], None, Non
         yield from _os_walk_filtered(subdir)
 
 
-def iter_walk(base_path: Path) -> Generator[Tuple[str, Path], None, None]:
+def iter_walk(
+    base_path: Path,
+) -> Generator[Tuple[str, Union[Path, zipfile.Path]], None, None]:
     """
     Iterate through all files that are descendants of `base_path`, recursively
     """

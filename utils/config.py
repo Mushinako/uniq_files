@@ -5,18 +5,19 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Pattern, Set
 
+
 # Config to be edited
-_WHITELIST_DIRNAMES = [
+_WHITELIST_DIRNAMES: List[str] = [
     ".git",
     ".vscode",
     "site-packages",
     "__pycache__",
     "node_modules",
 ]
-_WHITELIST_DIRPATHS = []
-_WHITELIST_FILENAMES = [".gitignore", "__init__.py"]
-_WHITELIST_FILEPATHS = []
-_WHITELIST_FILEREGEXES = []
+_WHITELIST_DIRPATHS: List[str] = []
+_WHITELIST_FILENAMES: List[str] = [".gitignore", "__init__.py"]
+_WHITELIST_FILEPATHS: List[str] = []
+_WHITELIST_FILEREGEXES: List[str] = []
 
 
 @dataclass
