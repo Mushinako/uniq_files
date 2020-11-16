@@ -1,5 +1,5 @@
 """
-Module: Inspect each file and get information
+Module: Special file properties stuff
 
 Public Classes:
     Path_Type
@@ -26,12 +26,6 @@ class Path_Type(Enum):
     ZIPPED = 1
 
 
-PATH_CLASS_MAP: Dict[Path_Type, Any] = {
-    Path_Type.REGULAR: pathlib.Path,
-    Path_Type.ZIPPED: Zip_Path,
-}
-
-
 @dataclass
 class File_Props:
     """
@@ -48,3 +42,9 @@ class File_Props:
     last_modified: float
     md5: str
     sha1: str
+
+
+PATH_CLASS_MAP: Dict[Path_Type, Any] = {
+    Path_Type.REGULAR: pathlib.Path,
+    Path_Type.ZIPPED: Zip_Path,
+}

@@ -2,7 +2,7 @@
 Module: Calculate total size
 
 Public Functions:
-    calc_size
+    calc_total_size
 """
 from __future__ import annotations
 from typing import Iterator, List, Tuple

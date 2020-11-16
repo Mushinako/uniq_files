@@ -1,7 +1,8 @@
 """
-Module: Special types for annotations
+Module: Special directory types
 
 Public Classes:
+    Zip_Path
     Union_Path
 """
 from __future__ import annotations

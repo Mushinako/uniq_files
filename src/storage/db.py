@@ -12,7 +12,7 @@ from contextlib import contextmanager
 from typing import Dict, Generator, List, Tuple
 
 from ..types_.dir_types import Union_Path
-from ..file_handler.inspect_file import PATH_CLASS_MAP, File_Props, Path_Type
+from ..types_.file_prop import PATH_CLASS_MAP, File_Props, Path_Type
 
 
 _TABLE_NAME = "files"

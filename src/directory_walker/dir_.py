@@ -13,6 +13,20 @@ from ..config import WHITELIST
 from ..types_.dir_types import Union_Path
 
 
+def parse_dir(path: Path) -> Generator[Tuple[str, List[Union_Path]], None, None]:
+    """
+    Walk through directory
+
+    Args:
+        path {pathlib.Path}: Base path to be checked
+
+    Yields:
+        {str}             : Path string
+        {list[Union_Path]}: List of paths in the folder
+    """
+    yield from _dir_walk_filtered(path)
+
+
 def _dir_walk_filtered(
     path: Path,
 ) -> Generator[Tuple[str, List[Union_Path]], None, None]:
@@ -59,17 +73,3 @@ def _dir_walk_filtered(
         return
 
     yield str(path), files
-
-
-def parse_dir(path: Path) -> Generator[Tuple[str, List[Union_Path]], None, None]:
-    """
-    Walk through directory
-
-    Args:
-        path {pathlib.Path}: Base path to be checked
-
-    Yields:
-        {str}             : Path string
-        {list[Union_Path]}: List of paths in the folder
-    """
-    yield from _dir_walk_filtered(path)

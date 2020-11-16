@@ -12,6 +12,21 @@ from ..config import WHITELIST
 from ..types_.dir_types import Zip_Path
 
 
+def parse_zip(path: Path) -> Generator[Tuple[str, List[Zip_Path]], None, None]:
+    """
+    Walk through zip
+
+    Args:
+        path {pathlib.Path}: Path for the zip file
+
+    Yields:
+        {str}               : Path string
+        {list[zipfile.Path]}: List of paths in the folder
+    """
+    zip_path = Zip_Path(path)
+    yield from _zip_walk_filtered(zip_path)
+
+
 def _zip_walk_filtered(
     path: Zip_Path,
 ) -> Generator[Tuple[str, List[Zip_Path]], None, None]:
@@ -49,18 +64,3 @@ def _zip_walk_filtered(
         return
 
     yield str(path), files
-
-
-def parse_zip(path: Path) -> Generator[Tuple[str, List[Zip_Path]], None, None]:
-    """
-    Walk through zip
-
-    Args:
-        path {pathlib.Path}: Path for the zip file
-
-    Yields:
-        {str}               : Path string
-        {list[zipfile.Path]}: List of paths in the folder
-    """
-    zip_path = Zip_Path(path)
-    yield from _zip_walk_filtered(zip_path)
