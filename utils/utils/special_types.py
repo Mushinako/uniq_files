@@ -5,8 +5,16 @@ Public Classes:
     Union_Path
 """
 from __future__ import annotations
-import pathlib
 import zipfile
-from typing import Union
 
-Union_Path = Union[pathlib.Path, zipfile.Path]
+
+class Zip_Path(zipfile.Path):
+    """
+    Similar to zipfile.Path, but implements a `stat().st_size` and `stat().st_mtime`
+    """
+
+    # Technically `zipfile.FastLookup` but no matter
+    root: zipfile.ZipFile
+
+    def _next(self, at: str) -> Zip_Path:
+        return Zip_Path(self.root, at)

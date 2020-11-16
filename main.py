@@ -14,6 +14,7 @@ def main():
     clear_print("Reading DB...", end="")
     db_data = read_db(args.db_path)
     clear_print(f"Read {len(db_data)} entries from DB")
+    # Get total size estimate
 
 
 if __name__ == "__main__":
