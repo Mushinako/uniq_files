@@ -20,7 +20,7 @@ def parse_argv() -> _Args:
     parser.add_argument("base_path", type=_full_path, help="Base path")
     parser.add_argument("json_path", type=_full_path, help="Duplication JSON path")
     parser.add_argument("db_path", type=_full_path, help="File database path")
-    args: _Args = parser.parse_args()
+    args = parser.parse_args(namespace=_Args())
 
     _prepare_argv(args)
 

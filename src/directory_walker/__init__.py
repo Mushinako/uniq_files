@@ -7,7 +7,7 @@ Public Constants:
 from pathlib import Path
 from typing import Callable, Dict, Generator, List, Tuple
 
-from ..utils.special_types import Union_Path
+from ..types_.dir_types import Union_Path
 
 DIRECTORY_EXT: Dict[
     str, Callable[[Path], Generator[Tuple[str, List[Union_Path]], None, None]]

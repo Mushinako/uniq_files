@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Generator, List, Tuple
 
 from ..config import WHITELIST
-from ..utils.special_types import Zip_Path
+from ..types_.dir_types import Zip_Path
 
 
 def _zip_walk_filtered(

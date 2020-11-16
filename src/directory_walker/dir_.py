@@ -10,7 +10,7 @@ from typing import Generator, List, Tuple
 
 from . import DIRECTORY_EXT
 from ..config import WHITELIST
-from ..utils.special_types import Union_Path
+from ..types_.dir_types import Union_Path
 
 
 def _dir_walk_filtered(

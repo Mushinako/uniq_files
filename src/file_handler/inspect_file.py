@@ -10,12 +10,11 @@ Public Constants:
 """
 from __future__ import annotations
 import pathlib
-import zipfile
 from enum import Enum
 from dataclasses import dataclass
-from typing import Dict, Type
+from typing import Any, Dict
 
-from ..utils.special_types import Union_Path
+from ..types_.dir_types import Union_Path, Zip_Path
 
 
 class Path_Type(Enum):
@@ -27,9 +26,9 @@ class Path_Type(Enum):
     ZIPPED = 1
 
 
-PATH_CLASS_MAP: Dict[Path_Type, Type[Union_Path]] = {
+PATH_CLASS_MAP: Dict[Path_Type, Any] = {
     Path_Type.REGULAR: pathlib.Path,
-    Path_Type.ZIPPED: zipfile.Path,
+    Path_Type.ZIPPED: Zip_Path,
 }
 
 

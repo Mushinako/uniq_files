@@ -5,15 +5,14 @@ Public Functions:
     clear_print
 """
 from __future__ import annotations
-from _typeshed import SupportsWrite
-from typing import Optional
+from typing import Any, Optional
 
 
 def clear_print(
     print_text: str,
     sep: Optional[str] = None,
     end: Optional[str] = None,
-    file: Optional[SupportsWrite[str]] = None,
+    file: Optional[Any] = None,
     flush: bool = False,
 ) -> None:
     """
