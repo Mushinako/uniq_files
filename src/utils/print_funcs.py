@@ -4,8 +4,7 @@ Module: Helper functions
 Public Functions:
     clear_print
 """
-
-
+from __future__ import annotations
 from _typeshed import SupportsWrite
 from typing import Optional
 

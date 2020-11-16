@@ -1,5 +1,8 @@
 """
 Module: Directory walker
+
+Public Functions:
+    parse_dir
 """
 from __future__ import annotations
 from pathlib import Path
@@ -56,3 +59,17 @@ def _dir_walk_filtered(
         return
 
     yield str(path), files
+
+
+def parse_dir(path: Path) -> Generator[Tuple[str, List[Union_Path]], None, None]:
+    """
+    Walk through directory
+
+    Args:
+        path {pathlib.Path}: Base path to be checked
+
+    Yields:
+        {str}             : Path string
+        {list[Union_Path]}: List of paths in the folder
+    """
+    yield from _dir_walk_filtered(path)
