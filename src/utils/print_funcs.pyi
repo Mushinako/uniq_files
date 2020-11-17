@@ -11,3 +11,15 @@ def clear_print(
     flush: bool = ...,
 ) -> None:
     ...
+
+
+def progress_str(id_: int, count: int) -> str:
+    ...
+
+
+def progress_percent(finished_size: int, total_size: int) -> str:
+    ...
+
+
+def shrink_str(shrink: str, *, prefix: str = ..., postfix: str = ...) -> str:
+    ...

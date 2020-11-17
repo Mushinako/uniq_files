@@ -5,14 +5,17 @@ Public Classes:
     Path_Type
     File_Props
 
+Public Functions:
+    class_2_type
+
 Public Constants:
-    PATH_FUNCTION_MAP
+    PATH_CLASS_MAP
 """
 from __future__ import annotations
-import pathlib
+from pathlib import Path, WindowsPath, PosixPath
 from enum import Enum
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Dict, Type, Union
 
 from ..types_.dir_types import Union_Path, Zip_Path
 
@@ -44,7 +47,25 @@ class File_Props:
     sha1: str
 
 
-PATH_CLASS_MAP: Dict[Path_Type, Any] = {
-    Path_Type.REGULAR: pathlib.Path,
+PATH_CLASS_MAP: Dict[Path_Type, Union[Type[Path], Type[Zip_Path]]] = {
+    Path_Type.REGULAR: Path,
     Path_Type.ZIPPED: Zip_Path,
 }
+
+
+def class_2_type(cls: Union[Type[Path], Type[Zip_Path]]) -> Path_Type:
+    """
+    Reverse of the `PATH_CLASS_MAP` mapping get method
+
+    Args:
+        cls {Union[Type[Path], Type[Zip_Path]]}: The class to be checked
+
+    Returns:
+        {Path_Type}: Corresponding path type
+    """
+    for path_type, path_cls in PATH_CLASS_MAP.items():
+        if cls in [WindowsPath, PosixPath]:
+            cls = Path
+        if path_cls == cls:
+            return path_type
+    raise ValueError(f"{cls.__name__} is not a valid class.")
