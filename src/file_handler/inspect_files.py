@@ -56,6 +56,8 @@ def inspect_all_files(
                     finished_size,
                     total_size,
                 )
+                if file_props is None:
+                    continue
                 same_props[file_props.size, file_props.md5, file_props.sha1].append(
                     str(file_path)
                 )
@@ -88,7 +90,7 @@ def _inspect_file(
     dir_progress: str,
     finished_size: int,
     total_size: int,
-) -> Tuple[File_Props, int]:
+) -> Tuple[Optional[File_Props], int]:
     """
     Inspect all the files and get relevant properties
 
@@ -126,29 +128,32 @@ def _inspect_file(
     md5 = md5_factory()
     sha1 = sha1_factory()
 
-    with file_path.open("rb") as fp:
-        for i in range(1, num_chunks + 1):
-            chunk = fp.read(_CHUNK_SIZE)
-            finished_size += len(chunk)
-            clear_print(
-                shrink_str(
-                    file_path.name,
-                    prefix=f"{progress_percent(finished_size, total_size)} {dir_progress}",
-                    postfix=f"[Chunk {progress_str(i, num_chunks)}]",
-                ),
-                end="",
-            )
-            md5.update(chunk)
-            sha1.update(chunk)
-
-    return (
-        File_Props(
-            file_path,
-            class_2_type(type(file_path)),
-            size,
-            last_modified,
-            md5.hexdigest(),
-            sha1.hexdigest(),
-        ),
-        finished_size,
-    )
+    try:
+        with file_path.open("rb") as fp:
+            for i in range(1, num_chunks + 1):
+                chunk = fp.read(_CHUNK_SIZE)
+                finished_size += len(chunk)
+                clear_print(
+                    shrink_str(
+                        file_path.name,
+                        prefix=f"{progress_percent(finished_size, total_size)} {dir_progress}",
+                        postfix=f"[Chunk {progress_str(i, num_chunks)}]",
+                    ),
+                    end="",
+                )
+                md5.update(chunk)
+                sha1.update(chunk)
+    except PermissionError:
+        return (None, finished_size + file_path.stat().st_size)
+    else:
+        return (
+            File_Props(
+                file_path,
+                class_2_type(type(file_path)),
+                size,
+                last_modified,
+                md5.hexdigest(),
+                sha1.hexdigest(),
+            ),
+            finished_size,
+        )
