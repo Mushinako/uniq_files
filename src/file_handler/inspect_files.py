@@ -77,7 +77,7 @@ def inspect_all_files(
             },
             "paths": file_paths,
         }
-        for (size, md5, sha1), file_paths in same_props.items()
+        for (size, md5, sha1), file_paths in sorted(same_props.items())
         if len(file_paths) > 1
     ]
 
