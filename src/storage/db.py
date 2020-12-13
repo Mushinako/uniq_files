@@ -58,7 +58,7 @@ def read_db(db_path: Path) -> Dict[Union_Path, File_Props]:
             Path_Class = PATH_CLASS_MAP[path_type]
             path: Union_Path = Path_Class(path_str)
             files_props[path] = File_Props(
-                path, path_type, int(size_str), int(last_modified_str), md5, sha1
+                path, path_type, int(size_str), float(last_modified_str), md5, sha1
             )
     return files_props
 
