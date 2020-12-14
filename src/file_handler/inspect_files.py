@@ -48,7 +48,7 @@ def inspect_all_files(
             clear_print(f"Walking {dir_path}...")
             num_files = len(file_paths)
             for i, file_path in enumerate(file_paths):
-                dir_progress = f"[File {progress_str(i, num_files)}]"
+                dir_progress = f"[File {progress_str(i+1, num_files)}]"
                 file_props, finished_size = _inspect_file(
                     file_path,
                     db_data.get(file_path),
