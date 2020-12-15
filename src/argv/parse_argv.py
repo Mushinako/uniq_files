@@ -3,10 +3,16 @@ Module: Parsing command-line arguments
 
 Public Functions:
     parse_argv {None -> _Args}
+
+Public Constants:
+    SMALL_SIZE
 """
 from __future__ import annotations
 from pathlib import Path
 from argparse import ArgumentParser, Namespace
+from typing import Optional
+
+SMALL_SIZE = 4
 
 
 def parse_argv() -> _Args:
@@ -17,9 +23,50 @@ def parse_argv() -> _Args:
         {_Args}: Namespace object for all arguments
     """
     parser = ArgumentParser(description="Check file duplicates under some base path")
-    parser.add_argument("base_path", type=_full_path, help="Base path")
-    parser.add_argument("json_path", type=_full_path, help="Duplication JSON path")
-    parser.add_argument("db_path", type=_full_path, help="File database path")
+    parser.add_argument(
+        "-f",
+        "--dir-path",
+        nargs=1,
+        type=_full_path,
+        required=True,
+        help="Base directory path",
+        dest="dir_path",
+    )
+    parser.add_argument(
+        "-j",
+        "--dup-json-path",
+        nargs=1,
+        type=_full_path,
+        required=True,
+        help="Duplication JSON path",
+        dest="dup_json_path",
+    )
+    parser.add_argument(
+        "-b",
+        "--small-json-path",
+        nargs=1,
+        type=_full_path,
+        help="Small file duplication JSON path (Optional)",
+        dest="small_json_path",
+    )
+    parser.add_argument(
+        "-d",
+        "--db-path",
+        nargs=1,
+        type=_full_path,
+        required=True,
+        help="File database path",
+        dest="db_path",
+    )
+    parser.add_argument(
+        "-s",
+        "--small-size",
+        nargs=1,
+        default=SMALL_SIZE,
+        type=int,
+        help="Maximum file size to qualify as a small file (Default: 4 bytes)",
+        dest="small_size",
+    )
     args = parser.parse_args(namespace=_Args())
 
     _prepare_argv(args)
@@ -32,9 +79,11 @@ class _Args(Namespace):
     Command-line arguments object, for type annotations only
     """
 
-    base_path: Path
-    json_path: Path
+    dir_path: Path
+    dup_json_path: Path
+    small_json_path: Optional[Path]
     db_path: Path
+    small_size: int
 
 
 def _full_path(arg: str) -> Path:
@@ -56,12 +105,24 @@ def _prepare_argv(args: _Args) -> None:
 
     args {_Args}: Parsed command-line args
     """
-    if not args.base_path.is_dir():
-        raise FileNotFoundError(f"`base_path` not a directory: {args.base_path}")
-    if args.json_path.exists() and not args.json_path.is_file():
-        raise FileNotFoundError(f"`dup_json_path` not a file: {args.json_path}")
-    if args.db_path.exists() and not args.db_path.is_file():
-        raise FileNotFoundError(f"`file_database_path` not a file: {args.db_path}")
+    if not args.dir_path.is_dir():
+        raise FileExistsError(
+            f"`dir_path` exists but is not a directory: {args.dir_path}"
+        )
 
-    args.json_path.parent.mkdir(parents=True, exist_ok=True)
+    if args.dup_json_path.exists() and not args.dup_json_path.is_file():
+        raise FileExistsError(
+            f"`dup_json_path` exists but is not a file: {args.dup_json_path}"
+        )
+    args.dup_json_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if args.small_json_path is not None:
+        if args.small_json_path.exists() and not args.small_json_path.is_file():
+            raise FileExistsError(
+                f"`small_json_path` exists but is not a file: {args.small_json_path}"
+            )
+        args.small_json_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if args.db_path.exists() and not args.db_path.is_file():
+        raise FileExistsError(f"`db_path` exists but is not a file: {args.db_path}")
     args.db_path.parent.mkdir(parents=True, exist_ok=True)

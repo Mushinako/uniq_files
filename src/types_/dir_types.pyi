@@ -10,6 +10,7 @@ class Zip_Path(zipfile.Path):
     def stat(self) -> _Zip_Stat_Result: ...
 
 Union_Path = Union[pathlib.Path, Zip_Path]
+Union_Path_Types = Union[type[pathlib.Path], type[Zip_Path]]
 
 class _Zip_Stat_Result:
     st_size: int

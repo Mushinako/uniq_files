@@ -6,15 +6,15 @@ Public Functions:
 """
 from __future__ import annotations
 from pathlib import Path
-from typing import Generator, List, Tuple
+from typing import Generator
 
 from ..config import WHITELIST
 from ..types_.dir_types import Zip_Path
 
 
-def parse_zip(path: Path) -> Generator[Tuple[str, List[Zip_Path]], None, None]:
+def parse_zip(path: Path) -> Generator[tuple[str, list[Zip_Path]], None, None]:
     """
-    Walk through zip
+    Walk through a zip file
 
     Args:
         path {pathlib.Path}: Path for the zip file
@@ -29,7 +29,7 @@ def parse_zip(path: Path) -> Generator[Tuple[str, List[Zip_Path]], None, None]:
 
 def _zip_walk_filtered(
     path: Zip_Path,
-) -> Generator[Tuple[str, List[Zip_Path]], None, None]:
+) -> Generator[tuple[str, list[Zip_Path]], None, None]:
     """
     Walk through zip and filter out whitelisted folders/files recursively
 
@@ -40,7 +40,7 @@ def _zip_walk_filtered(
         {str}               : Path string
         {list[zipfile.Path]}: List of paths
     """
-    files: List[Zip_Path] = []
+    files: list[Zip_Path] = []
 
     try:
         for subpath in path.iterdir():

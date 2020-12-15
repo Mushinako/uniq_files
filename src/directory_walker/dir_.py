@@ -6,14 +6,14 @@ Public Functions:
 """
 from __future__ import annotations
 from pathlib import Path
-from typing import Generator, List, Tuple
+from typing import Generator
 
 from . import DIRECTORY_EXT
 from ..config import WHITELIST
 from ..types_.dir_types import Union_Path
 
 
-def parse_dir(path: Path) -> Generator[Tuple[str, List[Union_Path]], None, None]:
+def parse_dir(path: Path) -> Generator[tuple[str, list[Union_Path]], None, None]:
     """
     Walk through directory
 
@@ -29,7 +29,7 @@ def parse_dir(path: Path) -> Generator[Tuple[str, List[Union_Path]], None, None]
 
 def _dir_walk_filtered(
     path: Path,
-) -> Generator[Tuple[str, List[Union_Path]], None, None]:
+) -> Generator[tuple[str, list[Union_Path]], None, None]:
     """
     Walk through directory and filter out whitelisted folders/files recursively
 
@@ -41,7 +41,7 @@ def _dir_walk_filtered(
         {list[Union_Path]}: List of paths in the folder
     """
     # Techinically {list[Path]}
-    files: List[Union_Path] = []
+    files: list[Union_Path] = []
 
     try:
         for subpath in path.iterdir():

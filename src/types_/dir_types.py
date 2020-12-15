@@ -4,6 +4,7 @@ Module: Special directory types
 Public Classes:
     Zip_Path
     Union_Path
+    Union_Path_Types
 """
 from __future__ import annotations
 import pathlib
@@ -36,6 +37,7 @@ class Zip_Path(zipfile.Path):
 
 
 Union_Path = Union[pathlib.Path, Zip_Path]
+Union_Path_Types = Union[type[pathlib.Path], type[Zip_Path]]
 
 
 class _Zip_Stat_Result:

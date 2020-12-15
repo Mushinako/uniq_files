@@ -8,7 +8,7 @@ from __future__ import annotations
 from math import ceil
 from collections import defaultdict
 from hashlib import md5 as md5_factory, sha1 as sha1_factory
-from typing import Dict, Iterator, List, Optional, Tuple
+from typing import Iterator, Optional
 
 from ..utils.print_funcs import clear_print, progress_percent, progress_str, shrink_str
 from ..types_.dir_types import Union_Path
@@ -18,13 +18,10 @@ _CHUNK_SIZE = 1 << 26  # 64 MiB
 
 
 def inspect_all_files(
-    files_gen: Iterator[Tuple[str, List[Union_Path]]],
-    db_data: Dict[Union_Path, File_Props],
+    files_gen: Iterator[tuple[str, list[Union_Path]]],
+    db_data: dict[Union_Path, File_Props],
     total_size: int,
-) -> Tuple[
-    List[Dict[str, Dict[str, int | Dict[str, str]] | List[str]]],
-    List[File_Props],
-]:
+) -> tuple[list[tuple[tuple[int, str, str], list[str]]], list[File_Props]]:
     """
     Inspect all the files and get relevant properties
 
@@ -35,12 +32,11 @@ def inspect_all_files(
         total_size {int}                         : Total size of all files
 
     Returns:
-        {list[dict[str, dict[str, int | dict[str, str]] | list[str]]]}:
-            All duplications
-        {list[File_Props]}: All file properties
+        {list[tuple[tuple[int, str, str], list[str]]]}: All duplications
+        {list[File_Props]}                            : All file properties
     """
-    same_props: Dict[Tuple[int, str, str], List[str]] = defaultdict(lambda: [])
-    files_props: List[File_Props] = []
+    same_props: defaultdict[tuple[int, str, str], list[str]] = defaultdict(list)
+    files_props: list[File_Props] = []
     finished_size = 0
 
     try:
@@ -65,23 +61,9 @@ def inspect_all_files(
     except KeyboardInterrupt:
         clear_print("Stopping...")
 
-    # Get duplications
-    duplication_list = [
-        {
-            "properties": {
-                "size": size,
-                "hashes": {
-                    "md5": md5,
-                    "sha1": sha1,
-                },
-            },
-            "paths": file_paths,
-        }
-        for (size, md5, sha1), file_paths in sorted(same_props.items())
-        if len(file_paths) > 1
-    ]
+    dup_list = [entry for entry in sorted(same_props.items()) if len(entry) > 1]
 
-    return duplication_list, files_props
+    return dup_list, files_props
 
 
 def _inspect_file(
@@ -90,7 +72,7 @@ def _inspect_file(
     dir_progress: str,
     finished_size: int,
     total_size: int,
-) -> Tuple[Optional[File_Props], int]:
+) -> tuple[Optional[File_Props], int]:
     """
     Inspect all the files and get relevant properties
 
