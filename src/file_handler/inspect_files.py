@@ -21,7 +21,7 @@ def inspect_all_files(
     files_gen: Iterator[tuple[str, list[Union_Path]]],
     db_data: dict[Union_Path, File_Props],
     total_size: int,
-) -> tuple[list[tuple[tuple[int, str, str], list[str]]], list[File_Props]]:
+) -> tuple[list[tuple[tuple[int, str, str], list[str]]], list[File_Props], list[str]]:
     """
     Inspect all the files and get relevant properties
 
@@ -34,9 +34,11 @@ def inspect_all_files(
     Returns:
         {list[tuple[tuple[int, str, str], list[str]]]}: All duplications
         {list[File_Props]}                            : All file properties
+        {list[str]}                                   : All new files
     """
     same_props: defaultdict[tuple[int, str, str], list[str]] = defaultdict(list)
     files_props: list[File_Props] = []
+    new_files: list[str] = []
     finished_size = 0
 
     try:
@@ -45,7 +47,7 @@ def inspect_all_files(
             num_files = len(file_paths)
             for i, file_path in enumerate(file_paths):
                 dir_progress = f"[File {progress_str(i+1, num_files)}]"
-                file_props, finished_size = _inspect_file(
+                file_props, finished_size, new = _inspect_file(
                     file_path,
                     db_data.get(file_path),
                     dir_progress,
@@ -57,13 +59,15 @@ def inspect_all_files(
                 same_props[file_props.size, file_props.md5, file_props.sha1].append(
                     str(file_path)
                 )
+                if new:
+                    new_files.append(str(file_path))
                 files_props.append(file_props)
     except KeyboardInterrupt:
         clear_print("Stopping...")
 
     dup_list = [entry for entry in sorted(same_props.items()) if len(entry) > 1]
 
-    return dup_list, files_props
+    return dup_list, files_props, new_files
 
 
 def _inspect_file(
@@ -72,7 +76,7 @@ def _inspect_file(
     dir_progress: str,
     finished_size: int,
     total_size: int,
-) -> tuple[Optional[File_Props], int]:
+) -> tuple[Optional[File_Props], int, bool]:
     """
     Inspect all the files and get relevant properties
 
@@ -86,6 +90,7 @@ def _inspect_file(
     Returns:
         {File_Props}: File properties of a file
         {int}       : Total size of all finished files, including this one
+        {bool}      : Whether the file is new
     """
     stats = file_path.stat()
     size = stats.st_size
@@ -103,7 +108,7 @@ def _inspect_file(
             ),
             end="",
         )
-        return existing_file_props, finished_size
+        return existing_file_props, finished_size, False
 
     num_chunks = ceil(size / _CHUNK_SIZE)
 
@@ -126,7 +131,7 @@ def _inspect_file(
                 md5.update(chunk)
                 sha1.update(chunk)
     except PermissionError:
-        return (None, finished_size + file_path.stat().st_size)
+        return None, finished_size + file_path.stat().st_size, False
     else:
         return (
             File_Props(
@@ -138,4 +143,5 @@ def _inspect_file(
                 sha1.hexdigest(),
             ),
             finished_size,
+            True,
         )

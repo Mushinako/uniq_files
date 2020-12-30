@@ -32,6 +32,14 @@ def parse_argv() -> _Args:
         dest="dir_path",
     )
     parser.add_argument(
+        "-d",
+        "--db-path",
+        type=_full_path,
+        required=True,
+        help="File database path",
+        dest="db_path",
+    )
+    parser.add_argument(
         "-j",
         "--dup-json-path",
         type=_full_path,
@@ -47,12 +55,11 @@ def parse_argv() -> _Args:
         dest="small_json_path",
     )
     parser.add_argument(
-        "-d",
-        "--db-path",
+        "-n",
+        "--new-txt-path",
         type=_full_path,
-        required=True,
-        help="File database path",
-        dest="db_path",
+        help="New file text list",
+        dest="new_txt_path",
     )
     parser.add_argument(
         "-s",
@@ -75,9 +82,10 @@ class _Args(Namespace):
     """
 
     dir_path: Path
+    db_path: Path
     dup_json_path: Path
     small_json_path: Optional[Path]
-    db_path: Path
+    new_txt_path: Optional[Path]
     small_size: int
 
 
@@ -105,6 +113,10 @@ def _prepare_argv(args: _Args) -> None:
             f"`dir_path` exists but is not a directory: {args.dir_path}"
         )
 
+    if args.db_path.exists() and not args.db_path.is_file():
+        raise FileExistsError(f"`db_path` exists but is not a file: {args.db_path}")
+    args.db_path.parent.mkdir(parents=True, exist_ok=True)
+
     if args.dup_json_path.exists() and not args.dup_json_path.is_file():
         raise FileExistsError(
             f"`dup_json_path` exists but is not a file: {args.dup_json_path}"
@@ -118,6 +130,9 @@ def _prepare_argv(args: _Args) -> None:
             )
         args.small_json_path.parent.mkdir(parents=True, exist_ok=True)
 
-    if args.db_path.exists() and not args.db_path.is_file():
-        raise FileExistsError(f"`db_path` exists but is not a file: {args.db_path}")
-    args.db_path.parent.mkdir(parents=True, exist_ok=True)
+    if args.new_txt_path is not None:
+        if args.new_txt_path.exists() and not args.new_txt_path.is_file():
+            raise FileExistsError(
+                f"`new_txt_path` exists but is not a file: {args.new_txt_path}"
+            )
+        args.new_txt_path.parent.mkdir(parents=True, exist_ok=True)

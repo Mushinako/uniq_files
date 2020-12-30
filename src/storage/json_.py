@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Union
 
-from ..argv.parse_argv import SMALL_SIZE
+from ..parse_argv import SMALL_SIZE
 
 
 def write_json(
