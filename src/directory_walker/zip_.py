@@ -12,6 +12,23 @@ from ..config import WHITELIST
 from ..types_.dir_types import Zip_Path
 
 
+def check_zip(path: Path) -> bool:
+    """
+    Check if a file can be successfully opened as zip
+    """
+    try:
+        with Zip_Path(path):
+            pass
+    except NotImplementedError:
+        return False
+    except FileNotFoundError:
+        return False
+    except PermissionError:
+        return False
+    else:
+        return True
+
+
 def parse_zip(path: Path) -> Generator[tuple[str, list[Zip_Path]], None, None]:
     """
     Walk through a zip file
@@ -23,8 +40,8 @@ def parse_zip(path: Path) -> Generator[tuple[str, list[Zip_Path]], None, None]:
         {str}               : Path string
         {list[zipfile.Path]}: List of paths in the folder
     """
-    zip_path = Zip_Path(path)
-    yield from _zip_walk_filtered(zip_path)
+    with Zip_Path(path) as zip_path:
+        yield from _zip_walk_filtered(zip_path)
 
 
 def _zip_walk_filtered(
@@ -62,5 +79,5 @@ def _zip_walk_filtered(
                 files.append(subpath)
     except PermissionError:
         return
-
-    yield str(path), files
+    else:
+        yield str(path), files

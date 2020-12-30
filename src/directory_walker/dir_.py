@@ -47,28 +47,30 @@ def _dir_walk_filtered(
         for subpath in path.iterdir():
             if subpath.is_symlink():
                 continue
-            elif subpath.is_dir():
+            if subpath.is_dir():
                 if subpath.name in WHITELIST.dirnames:
                     continue
                 if subpath in WHITELIST.dirpaths:
                     continue
                 yield from _dir_walk_filtered(subpath)
-            elif (walk_gen := DIRECTORY_EXT.get(subpath.suffix, None)) is not None:
-                if subpath.name in WHITELIST.dirnames:
+                continue
+            if (config := DIRECTORY_EXT.get(subpath.suffix, None)) is not None:
+                test, walk_gen = config
+                if test(subpath):
+                    if subpath.name in WHITELIST.dirnames:
+                        continue
+                    if subpath in WHITELIST.dirpaths:
+                        continue
+                    yield from walk_gen(subpath)
                     continue
-                if subpath in WHITELIST.dirpaths:
-                    continue
-                yield from walk_gen(subpath)
-            else:
-                if subpath.name in WHITELIST.filenames:
-                    continue
-                if subpath in WHITELIST.filepaths:
-                    continue
-                if any(
-                    regex.fullmatch(str(subpath)) for regex in WHITELIST.fileregexes
-                ):
-                    continue
-                files.append(subpath)
+            if subpath.name in WHITELIST.filenames:
+                continue
+            if subpath in WHITELIST.filepaths:
+                continue
+            if any(regex.fullmatch(str(subpath)) for regex in WHITELIST.fileregexes):
+                continue
+            files.append(subpath)
+            continue
     except PermissionError:
         return
 

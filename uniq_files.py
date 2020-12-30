@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from time import time
-from itertools import tee
 
 from src.utils.print_funcs import clear_print
 from src.parse_argv import parse_argv
@@ -24,8 +23,8 @@ def main():
     db_data = read_db(args.db_path)
     clear_print(f"Read {len(db_data)} entries from DB")
     # Make 2 generators
-    files_gen = parse_dir(args.dir_path)
-    files_gen_size, files_gen_inspect = tee(files_gen, 2)
+    files_gen_size = parse_dir(args.dir_path)
+    files_gen_inspect = parse_dir(args.dir_path)
     # Get total size estimate
     clear_print(f"Calculating total size...")
     total_size = calc_total_size(files_gen_size)

@@ -25,6 +25,12 @@ class Zip_Path(zipfile.Path):
     root: zipfile.ZipFile
     at: str
 
+    def __enter__(self) -> Zip_Path:
+        return self
+
+    def __exit__(self, *_) -> None:
+        self.root.close()
+
     def _next(self, at: str) -> Zip_Path:
         return Zip_Path(self.root, at)
 
@@ -51,4 +57,12 @@ class _Zip_Stat_Result:
 
     def __init__(self, zip_info_obj: zipfile.ZipInfo) -> None:
         self.st_size = zip_info_obj.file_size
-        self.st_mtime = datetime(*zip_info_obj.date_time).timestamp()
+        date_time = (
+            zip_info_obj.date_time[0],
+            month if (month := zip_info_obj.date_time[1]) else 1,
+            day if (day := zip_info_obj.date_time[2]) else 1,
+            zip_info_obj.date_time[3],
+            zip_info_obj.date_time[4],
+            zip_info_obj.date_time[5],
+        )
+        self.st_mtime = datetime(*date_time).timestamp()
