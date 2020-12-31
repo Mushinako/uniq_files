@@ -2,30 +2,24 @@
 Module: Special file properties stuff
 
 Public Classes:
-    Path_Type
-    File_Props
-
-Public Functions:
-    class_2_type
-
-Public Constants:
-    PATH_CLASS_MAP
+    FileProps
 """
 from __future__ import annotations
+
 from dataclasses import dataclass
 
 
 @dataclass
-class File_Props:
+class FileProps:
     """
     File properties
 
     Properties:
-        path {str}: Path of the file
-        size {int}
-        last_modified {float}
-        md5 {str}
-        sha1 {str}
+        path          (str)  : Path of the file
+        size          (int)  : File size
+        last_modified (float): Last modified timestamp
+        md5           (str)  : MD5 hash
+        sha1          (str)  : SHA-1 hash
     """
 
     path: str

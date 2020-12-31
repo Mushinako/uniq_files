@@ -1,35 +1,37 @@
 """
-Module: Special directory types
+Module: Zip directory type
 
 Public Classes:
-    Zip_Path
-    Union_Path
-    Union_Path_Types
+    ZipPath
 """
+
 from __future__ import annotations
-import re
-import pathlib
+
 import zipfile
 from datetime import datetime
-from typing import Union
+from re import compile as re_compile
 
 
 class ZipPath(zipfile.Path):
     """
-    Similar to zipfile.Path, but implements a `stat().st_size` and `stat().st_mtime`
+    Similar to zipfile.Path, but does not open file on read, partly implments
+        `.stat()` method, and makes it work with context manager
 
     Public Methods:
         stat
     """
 
-    _ZIP_PATH_REGEX = re.compile(r"(?<=.zip)/")
+    _ZIP_PATH_REGEX = re_compile(r"(?<=.zip)/")
 
     # Technically `zipfile.FastLookup` but no matter
     root: zipfile.ZipFile
     at: str
 
     def __enter__(self) -> ZipPath:
-        return self
+        if self.root.fp is None:
+            return self.__class__(self.root, self.at)
+        else:
+            return self
 
     def __exit__(self, *_) -> None:
         self.root.close()
@@ -64,16 +66,13 @@ class ZipPath(zipfile.Path):
         return obj
 
 
-Union_Path = Union[pathlib.Path, ZipPath]
-
-
 class _Zip_Stat_Result:
     """
     Custom class emulating some functionalities of `os.stat_result` for zip file
 
     Properties:
-        st_size  {int}  : File size
-        st_mtime {float}: Last modified time
+        st_size  (int)  : File size
+        st_mtime (float): Last modified time
     """
 
     def __init__(self, zip_info_obj: zipfile.ZipInfo) -> None:

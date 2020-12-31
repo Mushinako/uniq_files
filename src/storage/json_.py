@@ -21,9 +21,10 @@ def write_json(
     Write duplication stuff to JSON
 
     Args:
-        dup_list      {list[tuple[tuple[int, str, str], list[str]]]}:
+        dup_list (list[tuple[tuple[int, str, str], list[str]]]):
             List of duplication data
-        dup_json_path {pathlib.Path}: Path of JSON file for large files
+        dup_json_path (pathlib.Path):
+            Path of JSON file for all duplications
     """
     # Get duplications
     formatted_data = [
@@ -46,7 +47,7 @@ def write_json(
 
 def write_json_w_small(
     dup_list: list[tuple[tuple[int, str, str], list[str]]],
-    dup_json_path: Path,
+    large_json_path: Path,
     small_json_path: Path,
     small_size: int = SMALL_SIZE,
 ) -> None:
@@ -54,11 +55,14 @@ def write_json_w_small(
     Write duplication stuff to JSON, separating large and small files
 
     Args:
-        dup_list        {list[tuple[tuple[int, str, str], list[str]]]}:
+        dup_list (list[tuple[tuple[int, str, str], list[str]]]):
             List of duplication data
-        dup_json_path   {pathlib.Path}: Path of JSON file for large files
-        small_json_path {pathlib.Path}: Path of JSON file for small files
-        small_size      {int}         : Threshold above which file is considered "large"
+        large_json_path (pathlib.Path):
+            Path of JSON file for large duplications
+        small_json_path (pathlib.Path):
+            Path of JSON file for small duplications
+        small_size (int):
+            Threshold above which file is considered "large"
     """
     small_list: list[
         dict[str, Union[dict[str, Union[int, dict[str, str]]], list[str]]]
@@ -100,7 +104,7 @@ def write_json_w_small(
         for (size, md5, sha1), file_paths in dup_iter
     ]
 
-    with dup_json_path.open("w") as dup_json_fp:
-        json.dump(large_list, dup_json_fp, indent=2)
+    with large_json_path.open("w") as large_json_fp:
+        json.dump(large_list, large_json_fp, indent=2)
     with small_json_path.open("w") as small_json_fp:
         json.dump(small_list, small_json_fp, indent=2)

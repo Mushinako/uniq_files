@@ -8,8 +8,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Generator
 
-from ..config import WHITELIST
-from ..types_.dir_types import Union_Path, ZipPath
+from .type_ import ZipPath
+from ..type_ import UnionPath
+from ...config import WHITELIST
 
 
 def check_zip(path: Path) -> bool:
@@ -29,16 +30,16 @@ def check_zip(path: Path) -> bool:
         return True
 
 
-def parse_zip(path: Path) -> Generator[tuple[str, list[Union_Path]], None, None]:
+def parse_zip(path: Path) -> Generator[tuple[str, list[UnionPath]], None, None]:
     """
     Walk through a zip file
 
     Args:
-        path {pathlib.Path}: Path for the zip file
+        path (pathlib.Path): Path for the zip file
 
     Yields:
-        {str}             : Path string
-        {list[Union_Path]}: List of paths in the folder
+        (str)            : Path string
+        (list[UnionPath]): List of paths in the folder
     """
     with ZipPath(path) as zip_path:
         yield from _zip_walk_filtered(zip_path)
@@ -46,19 +47,19 @@ def parse_zip(path: Path) -> Generator[tuple[str, list[Union_Path]], None, None]
 
 def _zip_walk_filtered(
     path: ZipPath,
-) -> Generator[tuple[str, list[Union_Path]], None, None]:
+) -> Generator[tuple[str, list[UnionPath]], None, None]:
     """
     Walk through zip and filter out whitelisted folders/files recursively
 
     Args:
-        path {ZipPath}: Base path to be checked
+        path (ZipPath): Base path to be checked
 
     Yields:
-        {str}             : Path string
-        {list[Union_Path]}: List of paths
+        (str)            : Path string
+        (list[UnionPath]): List of paths in the folder
     """
-    # Techinically {list[ZipPath]}
-    files: list[Union_Path] = []
+    # Technically list[ZipPath]
+    files: list[UnionPath] = []
 
     try:
         for subpath in sorted(path.iterdir()):

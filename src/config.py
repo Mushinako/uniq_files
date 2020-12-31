@@ -2,7 +2,7 @@
 Module: Configurations
 
 Public Constants:
-    WHITELIST {_Whitelist}: All the whitelists
+    WHITELIST (_Whitelist): All the whitelists
 """
 import re
 from dataclasses import dataclass
@@ -24,7 +24,9 @@ _WHITELIST_FILEREGEXES: list[str] = []
 
 @dataclass
 class _Whitelist:
-    """"""
+    """
+    Dataclass containing all the whitelists
+    """
 
     dirnames: set[str]
     dirpaths: set[str]

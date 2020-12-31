@@ -1,13 +1,37 @@
 """
 Module: Parse time
 
-Public Functions:
-    time_str
-    time_str_short
-    time_remaining
+Public Classes:
+    Progress
+    CalculationTime
+    TimeTaken
 """
 
 from dataclasses import dataclass
+from time import time
+
+from .print_funcs import progress_percent, progress_str
+
+
+@dataclass
+class Progress:
+    """
+    Progress recording
+    """
+
+    total: int
+    current: int = 0
+
+    def __str__(self) -> str:
+        return self.string
+
+    @property
+    def string(self) -> str:
+        return progress_str(self.current, self.total)
+
+    @property
+    def percentage(self) -> str:
+        return progress_percent(self.current, self.total)
 
 
 @dataclass
@@ -16,20 +40,43 @@ class CalculationTime:
     Calculation time recording
     """
 
-    size_left: int
-    size_processed: int = 0
+    left: int
+    processed: int = 0
     time_taken: float = 0.0
 
+    def __str__(self) -> str:
+        return _time_str_short(self.time_taken)
 
-def time_str(time: float) -> str:
+    @property
+    def time_left(self) -> str:
+        return _time_remaining(self.left, self.processed, self.time_taken)
+
+
+@dataclass
+class TimeTaken:
+    """
+    Total time running taken
+    """
+
+    start: float = time()
+
+    def __str__(self) -> str:
+        return self.string
+
+    @property
+    def string(self) -> str:
+        return _time_str(time() - self.start)
+
+
+def _time_str(time: float) -> str:
     """
     Parse time in seconds into human-readable string
 
     Args:
-        time {float}: Time in seconds
+        time (float): Time in seconds
 
     Returns:
-        {str}: Time string
+        (str): Time string
     """
     ms = round(time * 1_000)
     seconds, ms = divmod(ms, 1_000)
@@ -45,15 +92,15 @@ def time_str(time: float) -> str:
     )
 
 
-def time_str_short(time: float) -> str:
+def _time_str_short(time: float) -> str:
     """
     Parse time in seconds into human-readable string, short version
 
     Args:
-        time {float}: Time in seconds
+        time (float): Time in seconds
 
     Returns:
-        {str}: Time string
+        (str): Time string
     """
     seconds = round(time)
     minutes, seconds = divmod(seconds, 60)
@@ -66,21 +113,21 @@ def time_str_short(time: float) -> str:
         return f"{seconds:02}s"
 
 
-def time_remaining(calculation_time: CalculationTime) -> str:
+def _time_remaining(left: int, processed: int, time_taken: float) -> str:
     """
     Calculate time remaining
 
     Args:
-        calculation_time {CalculationTime}: Data for processed calculation time
+        left       (int): Amount of work left
+        processed  (int): Amount of work processed
+        time_taken (float): Time taken so far
 
     Returns:
-        {str}: Remaining time string
+        (str): Remaining time string
     """
-    size_processed = calculation_time.size_processed or 1
-    time_left = (
-        calculation_time.time_taken / size_processed * calculation_time.size_left
-    )
-    return time_str_short(time_left)
+    processed = processed or 1
+    time_left = time_taken / processed * left
+    return _time_str_short(time_left)
 
 
 def _simple_plural(n: int, word: str) -> str:
@@ -88,10 +135,10 @@ def _simple_plural(n: int, word: str) -> str:
     Add `s` to words depending on plurality
 
     Args:
-        n    {int}: The number to be checked for plurality
-        word {str}: The word to be potentially pluralized
+        n    (int): The number to be checked for plurality
+        word (str): The word to be potentially pluralized
 
     Returns:
-        {str}: Completed string
+        (str): Completed string
     """
     return word if n == 1 else word + "s"

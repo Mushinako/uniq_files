@@ -8,40 +8,41 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Generator
 
-from . import DIRECTORY_EXT
-from ..config import WHITELIST
-from ..types_.dir_types import Union_Path
+from .type_ import DirPath
+from .. import DIRECTORY_EXT
+from ..type_ import UnionPath
+from ...config import WHITELIST
 
 
-def parse_dir(path: Path) -> Generator[tuple[str, list[Union_Path]], None, None]:
+def parse_dir(path: Path) -> Generator[tuple[str, list[UnionPath]], None, None]:
     """
     Walk through directory
 
     Args:
-        path {pathlib.Path}: Base path to be checked
+        path (pathlib.Path): Base path to be checked
 
     Yields:
-        {str}             : Path string
-        {list[Union_Path]}: List of paths in the folder
+        (str)            : Path string
+        (list[UnionPath]): List of paths in the folder
     """
     yield from _dir_walk_filtered(path)
 
 
 def _dir_walk_filtered(
     path: Path,
-) -> Generator[tuple[str, list[Union_Path]], None, None]:
+) -> Generator[tuple[str, list[UnionPath]], None, None]:
     """
     Walk through directory and filter out whitelisted folders/files recursively
 
     Args:
-        path {pathlib.Path}: Base path to be checked
+        path (pathlib.Path): Base path to be checked
 
     Yields:
-        {str}             : Path string
-        {list[Union_Path]}: List of paths in the folder
+        (str)            : Path string
+        (list[UnionPath]): List of paths in the folder
     """
-    # Techinically {list[Path]}
-    files: list[Union_Path] = []
+    # Technically list[DirPath]
+    files: list[UnionPath] = []
 
     try:
         for subpath in sorted(path.iterdir()):
@@ -69,7 +70,7 @@ def _dir_walk_filtered(
                 continue
             if any(regex.fullmatch(subpath_str) for regex in WHITELIST.fileregexes):
                 continue
-            files.append(subpath)
+            files.append(DirPath(subpath))
             continue
     except PermissionError:
         return

@@ -2,7 +2,7 @@
 Module: Parsing command-line arguments
 
 Public Functions:
-    parse_argv {None -> _Args}
+    parse_argv
 
 Public Constants:
     SMALL_SIZE
@@ -20,7 +20,7 @@ def parse_argv() -> _Args:
     Parse command-line arguments
 
     Returns:
-        {_Args}: Namespace object for all arguments
+        (_Args): Namespace object for all arguments
     """
     parser = ArgumentParser(description="Check file duplicates under some base path")
     parser.add_argument(
@@ -94,10 +94,10 @@ def _full_path(arg: str) -> Path:
     Helper function for resolving all the paths to absolute Path objects
 
     Args:
-        arg {str}: Command-line argument
+        arg (str): Command-line argument
 
     Returns:
-        {Path}: Absolute Path object
+        (Path): Absolute Path object
     """
     return Path(arg).resolve()
 
@@ -106,10 +106,10 @@ def _prepare_argv(args: _Args) -> None:
     """
     Check arguments validity and make preparations
 
-    args {_Args}: Parsed command-line args
+    args (_Args): Parsed command-line args
     """
     if not args.dir_path.is_dir():
-        raise FileExistsError(
+        raise NotADirectoryError(
             f"`dir_path` exists but is not a directory: {args.dir_path}"
         )
 

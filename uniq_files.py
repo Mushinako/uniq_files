@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from time import time
-
 from src.utils.print_funcs import clear_print
 from src.parse_argv import parse_argv
 from src.storage.db import read_db, write_db
 from src.storage.json_ import write_json, write_json_w_small
-from src.directory_walker.dir_ import parse_dir
+from src.dirs.dir_.walker import parse_dir
 from src.file_handler.calc_size import calc_total_size
 from src.file_handler.inspect_files import inspect_all_files
 from src.storage.txt import write_txt
-from src.utils.time_ import time_str
+from src.utils.time_ import TimeTaken
 
 
 def main():
-    """"""
-    start = time()
+    time_taken = TimeTaken()
     # Parse command-line arguments
     args = parse_argv()
     # Read DB
@@ -53,8 +50,7 @@ def main():
         clear_print(f"Writing new file paths to {args.new_txt_path}")
         write_txt(new_files, args.new_txt_path)
     # Total time used
-    duration = time() - start
-    print(f"Time taken: {time_str(duration)}")
+    print(f"Time taken: {time_taken.string}")
 
 
 if __name__ == "__main__":

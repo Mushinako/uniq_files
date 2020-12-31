@@ -2,8 +2,8 @@
 Module: Reading from and writing to sqlite3 database
 
 Public Functions:
-    read_db  {Path -> dict[Path, File_Props]}
-    write_db {Path, list[File_Props] -> None}
+    read_db
+    write_db
 """
 from __future__ import annotations
 import sqlite3
@@ -11,7 +11,7 @@ from pathlib import Path
 from contextlib import contextmanager
 from typing import Generator
 
-from ..types_.file_prop import File_Props
+from ..file_handler.file_prop import FileProps
 
 
 _TABLE_NAME = "files"
@@ -35,36 +35,36 @@ VALUES (?, ?, ?, ?, ?);
 """
 
 
-def read_db(db_path: Path) -> dict[str, File_Props]:
+def read_db(db_path: Path) -> dict[str, FileProps]:
     """
     Read database at given path and returns data in a dictionary
 
     Args:
-        db_path {Path}: DB file path
+        db_path (pathlib.Path): DB file path
 
     Returns:
-        {dict[str, File_Props]}: Path-file property mapping
+        (dict[str, File_Props]): Existing path string-file property mapping
     """
-    files_props: dict[str, File_Props] = {}
+    files_props: dict[str, FileProps] = {}
     with _open_db(db_path) as con:
         with con:
             con.execute(_CREATE_TABLE_CMD)
         cursor = con.execute(_SELECT_TABLE_CMD)
         data: list[tuple[str, str, str, str, str]] = cursor.fetchall()
         for path, size_str, last_modified_str, md5, sha1 in data:
-            files_props[path] = File_Props(
+            files_props[path] = FileProps(
                 path, int(size_str), float(last_modified_str), md5, sha1
             )
     return files_props
 
 
-def write_db(files_props: list[File_Props], db_path: Path) -> None:
+def write_db(files_props: list[FileProps], db_path: Path) -> None:
     """
     Write database at given path
 
     Args:
-        files_props {list[File_Props]}: Stuff to be written to the database
-        db_path     {Path}            : DB file path
+        files_props (list[FileProps]): Stuff to be written to the database
+        db_path     (pathlib.Path)   : DB file path
     """
     with _open_db(db_path) as con:
         with con:
@@ -73,13 +73,7 @@ def write_db(files_props: list[File_Props], db_path: Path) -> None:
             con.executemany(
                 _INSERT_TABLE_CMD,
                 (
-                    (
-                        str(fp.path),
-                        str(fp.size),
-                        str(fp.last_modified),
-                        fp.md5,
-                        fp.sha1,
-                    )
+                    (str(fp.path), str(fp.size), str(fp.last_modified), fp.md5, fp.sha1)
                     for fp in files_props
                 ),
             )
@@ -91,10 +85,10 @@ def _open_db(db_path: Path) -> Generator[sqlite3.Connection, None, None]:
     Context manager for the sqlite3 database
 
     Args:
-        db_path {Path}: DB file path
+        db_path (pathlib.Path): DB file path
 
     Yields:
-        {sqlite3.Connection}: DB connection
+        (sqlite3.Connection): DB connection
     """
     con = sqlite3.connect(db_path)
     try:

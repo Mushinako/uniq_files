@@ -26,33 +26,33 @@ def clear_print(
     print("\r\x1b[K" + print_text, sep=sep, end=end, file=file, flush=flush)
 
 
-def progress_str(id_: int, count: int) -> str:
+def progress_str(current: int, total: int) -> str:
     """
     Generate progress string:  1/10
 
     Args:
-        id_   {int}: ID of current element
-        count {int}: Number of total elements
+        current (int): ID of current element
+        total   (int): Number of total elements
 
     Returns:
-        {str}: Progress string:  1/10
+        (str): Progress string:  1/10
     """
-    count_str = str(count)
-    return f"{id_:>{len(count_str)}}/{count_str}"
+    count_str = str(total)
+    return f"{current:>{len(count_str)}}/{count_str}"
 
 
-def progress_percent(finished_size: int, total_size: int) -> str:
+def progress_percent(current: int, total: int) -> str:
     """
     Generate progress percentage:  80.785%
 
     Args:
-        finished_size {int}: The cumulative size of finished stuff
-        total_size    {int}: The total size of stuff
+        current (int): The cumulative size of finished stuff
+        total   (int): The total size of stuff
 
     Returns:
         {str}: Progress percent string:  80.785%
     """
-    return f"{finished_size/total_size:8.3%}"
+    return f"{current/total:8.3%}"
 
 
 def shrink_str(shrink: str, *, prefix: str = "", postfix: str = "") -> str:
@@ -60,12 +60,12 @@ def shrink_str(shrink: str, *, prefix: str = "", postfix: str = "") -> str:
     Shrink string to fit on console
 
     Args:
-        shrink  {str}: String to be shrinked
-        prefix  {str}: Stuff before the string that can't be shrinked
-        postfix {str}: Stuff after the string that can't be shrinked
+        shrink  (str): String to be shrinked
+        prefix  (str): Stuff before the string that can't be shrinked
+        postfix (str): Stuff after the string that can't be shrinked
 
     Returns:
-        {str}: Full string
+        (str): Full string
     """
     max_len = get_terminal_size().columns - len(prefix) - len(postfix) - 4
     shrinked = ""
