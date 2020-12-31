@@ -15,6 +15,7 @@ from __future__ import annotations
 from pathlib import Path, WindowsPath, PosixPath
 from enum import Enum
 from dataclasses import dataclass
+from typing import Callable
 
 from ..types_.dir_types import Union_Path, Union_Path_Types, Zip_Path
 
@@ -46,9 +47,9 @@ class File_Props:
     sha1: str
 
 
-PATH_CLASS_MAP: dict[Path_Type, Union_Path_Types] = {
+PATH_CLASS_MAP: dict[Path_Type, Callable[[str], Union_Path]] = {
     Path_Type.REGULAR: Path,
-    Path_Type.ZIPPED: Zip_Path,
+    Path_Type.ZIPPED: Zip_Path.from_zip_path,
 }
 
 

@@ -7,6 +7,7 @@ Public Classes:
     Union_Path_Types
 """
 from __future__ import annotations
+import re
 import pathlib
 import zipfile
 from datetime import datetime
@@ -20,6 +21,8 @@ class Zip_Path(zipfile.Path):
     Public Methods:
         stat
     """
+
+    _ZIP_PATH_REGEX = re.compile(r"(?<=.zip)/")
 
     # Technically `zipfile.FastLookup` but no matter
     root: zipfile.ZipFile
@@ -40,6 +43,19 @@ class Zip_Path(zipfile.Path):
         """
         zip_info_obj = self.root.getinfo(self.at)
         return _Zip_Stat_Result(zip_info_obj)
+
+    @classmethod
+    def from_zip_path(cls, path: str) -> Zip_Path:
+        """
+        Get Zip_Path object from full compressed file path
+        """
+        root, *rest = Zip_Path._ZIP_PATH_REGEX.split(path)
+        if not root.endswith(".zip"):
+            raise ValueError(f"Not a valid compressed file path: {path}")
+        at = "/".join(rest)
+        obj = cls(root, at)
+        obj.root.close()
+        return obj
 
 
 Union_Path = Union[pathlib.Path, Zip_Path]
