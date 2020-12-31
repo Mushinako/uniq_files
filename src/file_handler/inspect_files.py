@@ -7,6 +7,7 @@ Public Functions:
 from __future__ import annotations
 from math import ceil
 from time import time
+from traceback import print_exc
 from collections import defaultdict
 from hashlib import md5 as md5_factory, sha1 as sha1_factory
 from typing import Iterator, Optional
@@ -73,6 +74,8 @@ def inspect_all_files(
                 files_props.append(file_props)
     except KeyboardInterrupt:
         clear_print("Stopping...")
+    except Exception:
+        print_exc()
 
     dup_list = [entry for entry in sorted(same_props.items()) if len(entry) > 1]
 
