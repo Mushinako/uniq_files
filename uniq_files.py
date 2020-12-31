@@ -10,7 +10,7 @@ from src.directory_walker.dir_ import parse_dir
 from src.file_handler.calc_size import calc_total_size
 from src.file_handler.inspect_files import inspect_all_files
 from src.storage.txt import write_txt
-from src.utils.parse_time import parse_time
+from src.utils.time_ import time_str
 
 
 def main():
@@ -31,7 +31,7 @@ def main():
     clear_print(f"Total file size: {total_size:,}")
     # Walk through all files
     dup_list, files_props, new_files = inspect_all_files(
-        files_gen_inspect, db_data, total_size
+        files_gen_inspect, db_data, total_size, time()
     )
     # Write JSON
     if args.small_json_path is None:
@@ -53,7 +53,7 @@ def main():
         write_txt(new_files, args.new_txt_path)
     # Total time used
     duration = time() - start
-    print(f"Time taken: {parse_time(duration)}")
+    print(f"Time taken: {time_str(duration)}")
 
 
 if __name__ == "__main__":
