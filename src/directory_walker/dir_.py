@@ -44,7 +44,7 @@ def _dir_walk_filtered(
     files: list[Union_Path] = []
 
     try:
-        for subpath in path.iterdir():
+        for subpath in sorted(path.iterdir()):
             if subpath.is_symlink():
                 continue
             if subpath.is_dir():

@@ -34,6 +34,12 @@ class Zip_Path(zipfile.Path):
     def __exit__(self, *_) -> None:
         self.root.close()
 
+    def __eq__(self, o: Zip_Path) -> bool:
+        return str(self) == str(o)
+
+    def __lt__(self, o: Zip_Path) -> bool:
+        return str(self) < str(o)
+
     def _next(self, at: str) -> Zip_Path:
         return Zip_Path(self.root, at)
 

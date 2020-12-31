@@ -60,7 +60,7 @@ def _zip_walk_filtered(
     files: list[Zip_Path] = []
 
     try:
-        for subpath in path.iterdir():
+        for subpath in sorted(path.iterdir()):
             if subpath.is_dir():
                 if subpath.name in WHITELIST.dirnames:
                     continue

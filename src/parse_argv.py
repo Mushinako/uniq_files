@@ -28,7 +28,7 @@ def parse_argv() -> _Args:
         "--dir-path",
         type=_full_path,
         required=True,
-        help="Base directory path",
+        help="base directory path",
         dest="dir_path",
     )
     parser.add_argument(
@@ -36,7 +36,7 @@ def parse_argv() -> _Args:
         "--db-path",
         type=_full_path,
         required=True,
-        help="File database path",
+        help="file database path",
         dest="db_path",
     )
     parser.add_argument(
@@ -44,21 +44,21 @@ def parse_argv() -> _Args:
         "--dup-json-path",
         type=_full_path,
         required=True,
-        help="Duplication JSON path",
+        help="duplication JSON path",
         dest="dup_json_path",
     )
     parser.add_argument(
         "-b",
         "--small-json-path",
         type=_full_path,
-        help="Small file duplication JSON path (Optional)",
+        help="small file duplication JSON path (Optional)",
         dest="small_json_path",
     )
     parser.add_argument(
         "-n",
         "--new-txt-path",
         type=_full_path,
-        help="New file text list",
+        help="new file text list",
         dest="new_txt_path",
     )
     parser.add_argument(
@@ -66,7 +66,7 @@ def parse_argv() -> _Args:
         "--small-size",
         default=SMALL_SIZE,
         type=int,
-        help="Maximum file size to qualify as a small file (Default: 4 bytes)",
+        help="maximum file size to qualify as a small file (Default: 4 bytes)",
         dest="small_size",
     )
     args = parser.parse_args(namespace=_Args())
