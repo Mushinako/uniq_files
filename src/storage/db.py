@@ -11,8 +11,7 @@ from pathlib import Path
 from contextlib import contextmanager
 from typing import Generator
 
-from ..types_.dir_types import Union_Path
-from ..types_.file_prop import PATH_CLASS_MAP, File_Props, Path_Type
+from ..types_.file_prop import File_Props
 
 
 _TABLE_NAME = "files"
@@ -37,7 +36,7 @@ VALUES (?, ?, ?, ?, ?, ?);
 """
 
 
-def read_db(db_path: Path) -> dict[Union_Path, File_Props]:
+def read_db(db_path: Path) -> dict[str, File_Props]:
     """
     Read database at given path and returns data in a dictionary
 
@@ -45,20 +44,17 @@ def read_db(db_path: Path) -> dict[Union_Path, File_Props]:
         db_path {Path}: DB file path
 
     Returns:
-        {dict[Union_Path, File_Props]}: Path-file property mapping
+        {dict[str, File_Props]}: Path-file property mapping
     """
-    files_props: dict[Union_Path, File_Props] = {}
+    files_props: dict[str, File_Props] = {}
     with _open_db(db_path) as con:
         with con:
             con.execute(_CREATE_TABLE_CMD)
         cursor = con.execute(_SELECT_TABLE_CMD)
         data: list[tuple[str, int, str, str, str, str]] = cursor.fetchall()
-        for path_str, path_type_int, size_str, last_modified_str, md5, sha1 in data:
-            path_type = Path_Type(path_type_int)
-            Path_Class = PATH_CLASS_MAP[path_type]
-            path: Union_Path = Path_Class(path_str)
+        for path, _, size_str, last_modified_str, md5, sha1 in data:
             files_props[path] = File_Props(
-                path, path_type, int(size_str), float(last_modified_str), md5, sha1
+                path, int(size_str), float(last_modified_str), md5, sha1
             )
     return files_props
 
@@ -80,7 +76,6 @@ def write_db(files_props: list[File_Props], db_path: Path) -> None:
                 (
                     (
                         str(fp.path),
-                        fp.path_type.value,
                         str(fp.size),
                         str(fp.last_modified),
                         fp.md5,

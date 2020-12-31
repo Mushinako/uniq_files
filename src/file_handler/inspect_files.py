@@ -12,14 +12,14 @@ from typing import Iterator, Optional
 
 from ..utils.print_funcs import clear_print, progress_percent, progress_str, shrink_str
 from ..types_.dir_types import Union_Path
-from ..types_.file_prop import File_Props, class_2_type
+from ..types_.file_prop import File_Props
 
 _CHUNK_SIZE = 1 << 26  # 64 MiB
 
 
 def inspect_all_files(
     files_gen: Iterator[tuple[str, list[Union_Path]]],
-    db_data: dict[Union_Path, File_Props],
+    db_data: dict[str, File_Props],
     total_size: int,
 ) -> tuple[list[tuple[tuple[int, str, str], list[str]]], list[File_Props], list[str]]:
     """
@@ -28,8 +28,10 @@ def inspect_all_files(
     Args:
         files_gen  {Iterator[tuple[str, list[Union_Path]]]}:
             Iterator that generates (dir_path, files) pairs
-        db_data    {dict[Union_Path, File_Props]}: Existing path-file property mapping
-        total_size {int}                         : Total size of all files
+        db_data    {dict[str, File_Props]}:
+            Existing path-file property mapping
+        total_size {int}:
+            Total size of all files
 
     Returns:
         {list[tuple[tuple[int, str, str], list[str]]]}: All duplications
@@ -49,7 +51,7 @@ def inspect_all_files(
                 dir_progress = f"[File {progress_str(i+1, num_files)}]"
                 file_props, finished_size, new = _inspect_file(
                     file_path,
-                    db_data.get(file_path),
+                    db_data.get(str(file_path)),
                     dir_progress,
                     finished_size,
                     total_size,
@@ -135,8 +137,7 @@ def _inspect_file(
     else:
         return (
             File_Props(
-                file_path,
-                class_2_type(type(file_path)),
+                str(file_path),
                 size,
                 last_modified,
                 md5.hexdigest(),
