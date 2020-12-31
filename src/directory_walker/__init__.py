@@ -14,8 +14,8 @@ Public Constants:
 from pathlib import Path
 from typing import Callable, Generator
 
-from ..types_.dir_types import Union_Path
 from .zip_ import check_zip, parse_zip
+from ..types_.dir_types import Union_Path
 
 DIRECTORY_EXT: dict[
     str,
@@ -24,5 +24,5 @@ DIRECTORY_EXT: dict[
         Callable[[Path], Generator[tuple[str, list[Union_Path]], None, None]],
     ],
 ] = {
-    ".zip": (check_zip, parse_zip),  # type: ignore
+    ".zip": (check_zip, parse_zip),
 }

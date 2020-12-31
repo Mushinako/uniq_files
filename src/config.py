@@ -5,7 +5,6 @@ Public Constants:
     WHITELIST {_Whitelist}: All the whitelists
 """
 import re
-from pathlib import Path
 from dataclasses import dataclass
 
 
@@ -28,16 +27,16 @@ class _Whitelist:
     """"""
 
     dirnames: set[str]
-    dirpaths: set[Path]
+    dirpaths: set[str]
     filenames: set[str]
-    filepaths: set[Path]
+    filepaths: set[str]
     fileregexes: list[re.Pattern[str]]
 
 
 WHITELIST = _Whitelist(
     set(_WHITELIST_DIRNAMES),
-    {Path(path).resolve() for path in _WHITELIST_DIRPATHS},
+    set(_WHITELIST_DIRPATHS),
     set(_WHITELIST_FILENAMES),
-    {Path(path).resolve() for path in _WHITELIST_FILEPATHS},
+    set(_WHITELIST_FILEPATHS),
     [re.compile(regex) for regex in _WHITELIST_FILEREGEXES],
 )

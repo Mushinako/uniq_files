@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Union
 
 
-class Zip_Path(zipfile.Path):
+class ZipPath(zipfile.Path):
     """
     Similar to zipfile.Path, but implements a `stat().st_size` and `stat().st_mtime`
 
@@ -28,20 +28,20 @@ class Zip_Path(zipfile.Path):
     root: zipfile.ZipFile
     at: str
 
-    def __enter__(self) -> Zip_Path:
+    def __enter__(self) -> ZipPath:
         return self
 
     def __exit__(self, *_) -> None:
         self.root.close()
 
-    def __eq__(self, o: Zip_Path) -> bool:
+    def __eq__(self, o: ZipPath) -> bool:
         return str(self) == str(o)
 
-    def __lt__(self, o: Zip_Path) -> bool:
+    def __lt__(self, o: ZipPath) -> bool:
         return str(self) < str(o)
 
-    def _next(self, at: str) -> Zip_Path:
-        return Zip_Path(self.root, at)
+    def _next(self, at: str) -> ZipPath:
+        return self.__class__(self.root, at)
 
     def stat(self) -> _Zip_Stat_Result:
         """
@@ -51,11 +51,11 @@ class Zip_Path(zipfile.Path):
         return _Zip_Stat_Result(zip_info_obj)
 
     @classmethod
-    def from_zip_path(cls, path: str) -> Zip_Path:
+    def from_zip_path(cls, path: str) -> ZipPath:
         """
         Get Zip_Path object from full compressed file path
         """
-        root, *rest = Zip_Path._ZIP_PATH_REGEX.split(path)
+        root, *rest = ZipPath._ZIP_PATH_REGEX.split(path)
         if not root.endswith(".zip"):
             raise ValueError(f"Not a valid compressed file path: {path}")
         at = "/".join(rest)
@@ -64,8 +64,7 @@ class Zip_Path(zipfile.Path):
         return obj
 
 
-Union_Path = Union[pathlib.Path, Zip_Path]
-Union_Path_Types = Union[type[pathlib.Path], type[Zip_Path]]
+Union_Path = Union[pathlib.Path, ZipPath]
 
 
 class _Zip_Stat_Result:

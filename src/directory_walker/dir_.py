@@ -50,7 +50,7 @@ def _dir_walk_filtered(
             if subpath.is_dir():
                 if subpath.name in WHITELIST.dirnames:
                     continue
-                if subpath in WHITELIST.dirpaths:
+                if str(subpath) in WHITELIST.dirpaths:
                     continue
                 yield from _dir_walk_filtered(subpath)
                 continue
@@ -59,15 +59,15 @@ def _dir_walk_filtered(
                 if test(subpath):
                     if subpath.name in WHITELIST.dirnames:
                         continue
-                    if subpath in WHITELIST.dirpaths:
+                    if str(subpath) in WHITELIST.dirpaths:
                         continue
                     yield from walk_gen(subpath)
                     continue
             if subpath.name in WHITELIST.filenames:
                 continue
-            if subpath in WHITELIST.filepaths:
+            if (subpath_str := str(subpath)) in WHITELIST.filepaths:
                 continue
-            if any(regex.fullmatch(str(subpath)) for regex in WHITELIST.fileregexes):
+            if any(regex.fullmatch(subpath_str) for regex in WHITELIST.fileregexes):
                 continue
             files.append(subpath)
             continue
