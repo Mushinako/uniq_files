@@ -8,6 +8,6 @@ Public Types:
 from typing import Union
 
 from .dir_.type_ import DirPath
-from .zip_.type_ import ZipPath
+from .zip_.type_ import RootZipPath
 
-UnionPath = Union[DirPath, ZipPath]
+UnionPath = Union[DirPath, RootZipPath]

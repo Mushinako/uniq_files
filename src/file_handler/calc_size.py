@@ -27,6 +27,6 @@ def calc_total_size(files_gen: Iterator[tuple[str, list[UnionPath]]]) -> int:
     for dir_path, files in files_gen:
         clear_print(shrink_str(dir_path), end="")
         for file in files:
-            total_size += file.stat().st_size
+            total_size += file.size
 
     return total_size

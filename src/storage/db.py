@@ -73,7 +73,7 @@ def write_db(files_props: list[FileProps], db_path: Path) -> None:
             con.executemany(
                 _INSERT_TABLE_CMD,
                 (
-                    (str(fp.path), str(fp.size), str(fp.last_modified), fp.md5, fp.sha1)
+                    (str(fp.path), str(fp.size), str(fp.mtime), fp.md5, fp.sha1)
                     for fp in files_props
                 ),
             )

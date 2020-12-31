@@ -8,9 +8,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Generator
 
-from .type_ import ZipPath
+from .type_ import RootZipPath
 from ..type_ import UnionPath
-from ...config import WHITELIST
 
 
 def check_zip(path: Path) -> bool:
@@ -18,7 +17,7 @@ def check_zip(path: Path) -> bool:
     Check if a file can be successfully opened as zip
     """
     try:
-        with ZipPath(path):
+        with RootZipPath(path):
             pass
     except NotImplementedError:
         return False
@@ -41,43 +40,11 @@ def parse_zip(path: Path) -> Generator[tuple[str, list[UnionPath]], None, None]:
         (str)            : Path string
         (list[UnionPath]): List of paths in the folder
     """
-    with ZipPath(path) as zip_path:
-        yield from _zip_walk_filtered(zip_path)
-
-
-def _zip_walk_filtered(
-    path: ZipPath,
-) -> Generator[tuple[str, list[UnionPath]], None, None]:
-    """
-    Walk through zip and filter out whitelisted folders/files recursively
-
-    Args:
-        path (ZipPath): Base path to be checked
-
-    Yields:
-        (str)            : Path string
-        (list[UnionPath]): List of paths in the folder
-    """
-    # Technically list[ZipPath]
-    files: list[UnionPath] = []
-
     try:
-        for subpath in sorted(path.iterdir()):
-            if subpath.is_dir():
-                if subpath.name in WHITELIST.dirnames:
-                    continue
-                if str(subpath) in WHITELIST.dirpaths:
-                    continue
-                yield from _zip_walk_filtered(subpath)
-            else:
-                if subpath.name in WHITELIST.filenames:
-                    continue
-                if (subpath_str := str(subpath)) in WHITELIST.filepaths:
-                    continue
-                if any(regex.fullmatch(subpath_str) for regex in WHITELIST.fileregexes):
-                    continue
-                files.append(subpath)
+        with RootZipPath(path) as zip_path:
+            # Make linter happy
+            files: list[UnionPath] = []
+            files.append(zip_path)
+            yield str(path), files
     except PermissionError:
         return
-    else:
-        yield str(path), files
