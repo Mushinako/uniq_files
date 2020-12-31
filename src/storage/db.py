@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
     sha1 TEXT NOT NULL
 );
 """
-_TRUNCATE_TABLE_CMD = f"DELETE FROM {_TABLE_NAME};"
+# _TRUNCATE_TABLE_CMD = f"DELETE FROM {_TABLE_NAME};"
+_TRUNCATE_TABLE_CMD = f"DROP TABLE {_TABLE_NAME};"
 _SELECT_TABLE_CMD = f"""
 SELECT path, path_type, size, last_modified, md5, sha1
 FROM {_TABLE_NAME};
@@ -69,6 +70,8 @@ def write_db(files_props: list[File_Props], db_path: Path) -> None:
     with _open_db(db_path) as con:
         with con:
             con.execute(_TRUNCATE_TABLE_CMD)
+        with con:
+            con.execute(_CREATE_TABLE_CMD)
         with con:
             con.executemany(
                 _INSERT_TABLE_CMD,
