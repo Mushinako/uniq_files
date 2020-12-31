@@ -76,9 +76,10 @@ def time_remaining(calculation_time: CalculationTime) -> str:
     Returns:
         {str}: Remaining time string
     """
+    num_processed_files = calculation_time.num_processed_files or 1
     time_left = (
         calculation_time.time_taken
-        / calculation_time.num_processed_files
+        / num_processed_files
         * calculation_time.num_files_left
     )
     return time_str_short(time_left)
