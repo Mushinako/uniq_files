@@ -18,7 +18,6 @@ _TABLE_NAME = "files"
 _CREATE_TABLE_CMD = f"""
 CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
     path TEXT PRIMARY KEY,
-    path_type INTEGER NOT NULL,
     size TEXT NOT NULL,
     last_modified TEXT NOT NULL,
     md5 TEXT NOT NULL,
@@ -31,8 +30,8 @@ SELECT path, path_type, size, last_modified, md5, sha1
 FROM {_TABLE_NAME};
 """
 _INSERT_TABLE_CMD = f"""
-INSERT INTO {_TABLE_NAME} (path, path_type, size, last_modified, md5, sha1)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO {_TABLE_NAME} (path, size, last_modified, md5, sha1)
+VALUES (?, ?, ?, ?, ?);
 """
 
 
