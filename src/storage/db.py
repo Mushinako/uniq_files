@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
 # _TRUNCATE_TABLE_CMD = f"DELETE FROM {_TABLE_NAME};"
 _TRUNCATE_TABLE_CMD = f"DROP TABLE {_TABLE_NAME};"
 _SELECT_TABLE_CMD = f"""
-SELECT path, path_type, size, last_modified, md5, sha1
+SELECT path, size, last_modified, md5, sha1
 FROM {_TABLE_NAME};
 """
 _INSERT_TABLE_CMD = f"""
@@ -51,8 +51,8 @@ def read_db(db_path: Path) -> dict[str, File_Props]:
         with con:
             con.execute(_CREATE_TABLE_CMD)
         cursor = con.execute(_SELECT_TABLE_CMD)
-        data: list[tuple[str, int, str, str, str, str]] = cursor.fetchall()
-        for path, _, size_str, last_modified_str, md5, sha1 in data:
+        data: list[tuple[str, str, str, str, str]] = cursor.fetchall()
+        for path, size_str, last_modified_str, md5, sha1 in data:
             files_props[path] = File_Props(
                 path, int(size_str), float(last_modified_str), md5, sha1
             )
