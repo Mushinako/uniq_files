@@ -4,7 +4,10 @@ Module: Parse time
 Public Functions:
     time_str
     time_str_short
+    time_remaining
 """
+
+from time import time
 
 
 def time_str(time: float) -> str:
@@ -50,6 +53,23 @@ def time_str_short(time: float) -> str:
         return f"{minutes:02}m {seconds:02}s"
     else:
         return f"{seconds:02}s"
+
+
+def time_remaining(finished: int, total: int, start: float) -> str:
+    """
+    Calculate time remaining
+
+    Args:
+        finished {int}  : Total size of all finished files
+        total    {int}  : Total size of all files
+        start    {float}: Start time
+
+    Returns:
+        {str}: Remaining time string
+    """
+    time_taken = time() - start
+    time_left = time_taken / finished * (total - finished)
+    return time_str_short(time_left)
 
 
 def _simple_plural(n: int, word: str) -> str:
