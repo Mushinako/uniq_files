@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
+
 from time import time
 
 from src.utils.print_funcs import clear_print
@@ -31,7 +32,7 @@ def main():
     clear_print(f"Total file size: {total_size:,}")
     # Walk through all files
     dup_list, files_props, new_files = inspect_all_files(
-        files_gen_inspect, db_data, total_size, time()
+        files_gen_inspect, db_data, total_size
     )
     # Write JSON
     if args.small_json_path is None:

@@ -7,7 +7,18 @@ Public Functions:
     time_remaining
 """
 
-from time import time
+from dataclasses import dataclass
+
+
+@dataclass
+class CalculationTime:
+    """
+    Calculation time recording
+    """
+
+    num_files_left: int
+    num_processed_files: int = 0
+    time_taken: float = 0.0
 
 
 def time_str(time: float) -> str:
@@ -55,20 +66,21 @@ def time_str_short(time: float) -> str:
         return f"{seconds:02}s"
 
 
-def time_remaining(finished: int, total: int, start: float) -> str:
+def time_remaining(calculation_time: CalculationTime) -> str:
     """
     Calculate time remaining
 
     Args:
-        finished {int}  : Total size of all finished files
-        total    {int}  : Total size of all files
-        start    {float}: Start time
+        calculation_time {CalculationTime}: Data for processed calculation time
 
     Returns:
         {str}: Remaining time string
     """
-    time_taken = time() - start
-    time_left = time_taken / finished * (total - finished)
+    time_left = (
+        calculation_time.time_taken
+        / calculation_time.num_processed_files
+        * calculation_time.num_files_left
+    )
     return time_str_short(time_left)
 
 

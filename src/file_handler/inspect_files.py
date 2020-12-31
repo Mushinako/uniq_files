@@ -6,6 +6,7 @@ Public Functions:
 """
 from __future__ import annotations
 from math import ceil
+from time import time
 from collections import defaultdict
 from hashlib import md5 as md5_factory, sha1 as sha1_factory
 from typing import Iterator, Optional
@@ -13,7 +14,7 @@ from typing import Iterator, Optional
 from ..utils.print_funcs import clear_print, progress_percent, progress_str, shrink_str
 from ..types_.dir_types import Union_Path
 from ..types_.file_prop import File_Props
-from ..utils.time_ import time_remaining
+from ..utils.time_ import CalculationTime, time_remaining
 
 _CHUNK_SIZE = 1 << 26  # 64 MiB
 
@@ -22,7 +23,6 @@ def inspect_all_files(
     files_gen: Iterator[tuple[str, list[Union_Path]]],
     db_data: dict[str, File_Props],
     total_size: int,
-    start: float,
 ) -> tuple[list[tuple[tuple[int, str, str], list[str]]], list[File_Props], list[str]]:
     """
     Inspect all the files and get relevant properties
@@ -34,8 +34,6 @@ def inspect_all_files(
             Existing path-file property mapping
         total_size {int}:
             Total size of all files
-        start      {float}:
-            Start time
 
     Returns:
         {list[tuple[tuple[int, str, str], list[str]]]}: All duplications
@@ -47,8 +45,12 @@ def inspect_all_files(
     new_files: list[str] = []
     finished_size = 0
 
+    files = tuple(files_gen)
+
+    calculation_time = CalculationTime(len(files))
+
     try:
-        for dir_path, file_paths in files_gen:
+        for dir_path, file_paths in files:
             clear_print(f"Walking {dir_path}...")
             num_files = len(file_paths)
             for i, file_path in enumerate(file_paths):
@@ -59,7 +61,7 @@ def inspect_all_files(
                     dir_progress,
                     finished_size,
                     total_size,
-                    start,
+                    calculation_time,
                 )
                 if file_props is None:
                     continue
@@ -83,7 +85,7 @@ def _inspect_file(
     dir_progress: str,
     finished_size: int,
     total_size: int,
-    start: float,
+    calculation_time: CalculationTime,
 ) -> tuple[Optional[File_Props], int, bool]:
     """
     Inspect all the files and get relevant properties
@@ -94,7 +96,7 @@ def _inspect_file(
         file_progress       {str}                 : File progress string
         finished_size       {int}                 : Total size of all finished files
         total_size          {int}                 : Total size of all files
-        start               {float}               : Start time
+        calculation_time    {CalculationTime}     : Data for processed calculation time
 
     Returns:
         {File_Props}: File properties of a file
@@ -105,6 +107,8 @@ def _inspect_file(
     size = stats.st_size
     last_modified = stats.st_mtime
 
+    calculation_time.num_files_left -= 1
+
     if (
         existing_file_props is not None
         and existing_file_props.last_modified == last_modified
@@ -114,7 +118,7 @@ def _inspect_file(
             shrink_str(
                 file_path.name,
                 prefix=f"{progress_percent(finished_size, total_size)} {dir_progress}",
-                postfix=time_remaining(finished_size, total_size, start),
+                postfix=time_remaining(calculation_time),
             ),
             end="",
         )
@@ -125,6 +129,8 @@ def _inspect_file(
     md5 = md5_factory()
     sha1 = sha1_factory()
 
+    start = time()
+
     try:
         with file_path.open("rb") as fp:
             for i in range(1, num_chunks + 1):
@@ -134,7 +140,7 @@ def _inspect_file(
                     shrink_str(
                         file_path.name,
                         prefix=f"{progress_percent(finished_size, total_size)} {dir_progress}",
-                        postfix=f"[Chunk {progress_str(i, num_chunks)}] {time_remaining(finished_size, total_size, start)}",
+                        postfix=f"[Chunk {progress_str(i, num_chunks)}] {time_remaining(calculation_time)}",
                     ),
                     end="",
                 )
@@ -143,6 +149,8 @@ def _inspect_file(
     except PermissionError:
         return None, finished_size + file_path.stat().st_size, False
     else:
+        calculation_time.num_processed_files += 1
+        calculation_time.time_taken += time() - start
         return (
             File_Props(
                 str(file_path),
