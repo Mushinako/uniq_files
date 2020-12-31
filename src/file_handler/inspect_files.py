@@ -47,7 +47,7 @@ def inspect_all_files(
 
     files = tuple(files_gen)
 
-    calculation_time = CalculationTime(len(files))
+    calculation_time = CalculationTime(total_size)
 
     try:
         for dir_path, file_paths in files:
@@ -107,13 +107,12 @@ def _inspect_file(
     size = stats.st_size
     last_modified = stats.st_mtime
 
-    calculation_time.num_files_left -= 1
-
     if (
         existing_file_props is not None
         and existing_file_props.last_modified == last_modified
     ):
         finished_size += size
+        calculation_time.size_left -= size
         clear_print(
             shrink_str(
                 file_path.name,
@@ -129,13 +128,18 @@ def _inspect_file(
     md5 = md5_factory()
     sha1 = sha1_factory()
 
-    start = time()
-
     try:
         with file_path.open("rb") as fp:
             for i in range(1, num_chunks + 1):
+                start = time()
                 chunk = fp.read(_CHUNK_SIZE)
-                finished_size += len(chunk)
+                md5.update(chunk)
+                sha1.update(chunk)
+                chunk_size = len(chunk)
+                finished_size += chunk_size
+                calculation_time.size_left -= chunk_size
+                calculation_time.size_processed += chunk_size
+                calculation_time.time_taken += time() - start
                 clear_print(
                     shrink_str(
                         file_path.name,
@@ -144,13 +148,9 @@ def _inspect_file(
                     ),
                     end="",
                 )
-                md5.update(chunk)
-                sha1.update(chunk)
     except PermissionError:
         return None, finished_size + file_path.stat().st_size, False
     else:
-        calculation_time.num_processed_files += 1
-        calculation_time.time_taken += time() - start
         return (
             File_Props(
                 str(file_path),
