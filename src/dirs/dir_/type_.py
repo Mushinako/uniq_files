@@ -14,7 +14,7 @@ from pathlib import Path, WindowsPath, PosixPath
 from time import time
 from typing import Any, Optional, Union
 
-from .. import CHUNK_SIZE
+from ..config import CHUNK_SIZE
 from ...file_handler.file_prop import FileProps
 from ...utils.print_funcs import clear_print, shrink_str
 from ...utils.time_ import CalculationTime, Progress
