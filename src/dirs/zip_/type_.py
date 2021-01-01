@@ -57,8 +57,8 @@ class _ZipPath(zipfile.Path):
             self.size = self._size()
             self.mtime = datetime.now().timestamp()
 
-    def _is_child(self, path: _ZipPath):
-        return dirname(path.at.rstrip("/")) == self.at.rstrip("/")
+    def _is_child_str(self, path_str: str):
+        return dirname(path_str.rstrip("/")) == self.at.rstrip("/")
 
     def _next(self, at: str) -> _ZipPath:
         return _ZipPath(self.root, at)
@@ -66,16 +66,14 @@ class _ZipPath(zipfile.Path):
     def _size(self) -> int:
         if self.is_dir():
             return sum(subpath._size() for subpath in self.iterdir())
-        elif self.is_file():
-            return self.size
         else:
-            return 0
+            return self.size
 
     def iterdir(self) -> Iterator[_ZipPath]:
         if not self.is_dir():
             raise ValueError("Can't listdir a file")
-        subs = map(self._next, sorted(self.root.namelist()))
-        return filter(self._is_child, subs)
+        subs = filter(self._is_child_str, sorted(self.root.namelist()))
+        return map(self._next, subs)
 
     def _process_dir(
         self,
