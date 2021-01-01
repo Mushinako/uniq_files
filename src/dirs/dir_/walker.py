@@ -12,6 +12,7 @@ from .type_ import DirPath
 from .. import DIRECTORY_EXT
 from ..type_ import UnionPath
 from ...config import WHITELIST
+from ...utils.print_funcs import clear_print, shrink_str
 
 
 def parse_dir(path: Path) -> Generator[tuple[str, list[UnionPath]], None, None]:
@@ -41,6 +42,7 @@ def _dir_walk_filtered(
         (str)            : Path string
         (list[UnionPath]): List of paths in the folder
     """
+    clear_print(shrink_str(str(path)), end="")
     # Technically list[DirPath]
     files: list[UnionPath] = []
 

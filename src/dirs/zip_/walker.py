@@ -10,6 +10,7 @@ from typing import Generator
 
 from .type_ import RootZipPath
 from ..type_ import UnionPath
+from ...config import WHITELIST
 
 
 def check_zip(path: Path) -> bool:
@@ -17,7 +18,7 @@ def check_zip(path: Path) -> bool:
     Check if a file can be successfully opened as zip
     """
     try:
-        with RootZipPath(path):
+        with RootZipPath(path, True):
             pass
     except NotImplementedError:
         return False
@@ -40,11 +41,12 @@ def parse_zip(path: Path) -> Generator[tuple[str, list[UnionPath]], None, None]:
         (str)            : Path string
         (list[UnionPath]): List of paths in the folder
     """
-    try:
-        with RootZipPath(path) as zip_path:
-            # Make linter happy
-            files: list[UnionPath] = []
-            files.append(zip_path)
-            yield str(path), files
-    except PermissionError:
+    if path.name in WHITELIST.dirnames:
         return
+    if str(path) in WHITELIST.dirpaths:
+        return
+    with RootZipPath(path) as zip_path:
+        # Make linter happy
+        files: list[UnionPath] = []
+        files.append(zip_path)
+        yield str(path), files

@@ -8,7 +8,6 @@ from __future__ import annotations
 from typing import Iterator
 
 from ..dirs.type_ import UnionPath
-from ..utils.print_funcs import clear_print, shrink_str
 
 
 def calc_total_size(files_gen: Iterator[tuple[str, list[UnionPath]]]) -> int:
@@ -24,8 +23,7 @@ def calc_total_size(files_gen: Iterator[tuple[str, list[UnionPath]]]) -> int:
     """
     total_size = 0
 
-    for dir_path, files in files_gen:
-        clear_print(shrink_str(dir_path), end="")
+    for _, files in files_gen:
         for file in files:
             total_size += file.size
 

@@ -6,7 +6,7 @@ Public Classes:
 """
 
 from __future__ import annotations
-from typing import Iterator, Union
+from typing import Iterator
 
 import zipfile
 from datetime import datetime
@@ -29,21 +29,40 @@ class _ZipPath(zipfile.Path):
     Similar to `zipfile.Path`, but partly implents some file stats
     """
 
-    # Technically `zipfile.FastLookup` but no matter
-    root: zipfile.ZipFile
-    at: str
+    def __init__(self, parent: RootZipPath, at: str) -> None:
+        self._parent = parent
+        self.at = at
+        self._size: Optional[int] = None
+        self._mtime: Optional[float] = None
+        self.filtered_paths: list[_ZipPath] = []
 
-    def __init__(self, root: Union[zipfile.ZipFile, zipfile.StrPath], at: str) -> None:
-        super().__init__(root, at=at)
-        self._zippath_init()
+    @property
+    def root(self) -> zipfile.ZipFile:
+        return self._parent.root_fp
 
-    def _zippath_init(self) -> None:
+    @property
+    def size(self) -> int:
+        if self._size is None:
+            self._stat_init()
+        if self._size is None:
+            raise ValueError(f"Cannot calculate size: {self}")
+        return self._size
+
+    @property
+    def mtime(self) -> float:
+        if self._mtime is None:
+            self._stat_init()
+        if self._mtime is None:
+            raise ValueError(f"Cannot calculate mtime: {self}")
+        return self._mtime
+
+    def _stat_init(self) -> None:
         """
         Add `self.size` and `self.mtime`
         """
         if self.is_file():
             info = self.root.getinfo(self.at)
-            self.size = info.file_size
+            self._size = info.file_size
             date_time = (
                 info.date_time[0],
                 month if (month := info.date_time[1]) else 1,
@@ -52,20 +71,20 @@ class _ZipPath(zipfile.Path):
                 info.date_time[4],
                 info.date_time[5],
             )
-            self.mtime = datetime(*date_time).timestamp()
+            self._mtime = datetime(*date_time).timestamp()
         else:
-            self.size = self._size()
-            self.mtime = datetime.now().timestamp()
+            self._size = self._calc_size()
+            self._mtime = datetime.now().timestamp()
 
     def _is_child_str(self, path_str: str):
         return dirname(path_str.rstrip("/")) == self.at.rstrip("/")
 
     def _next(self, at: str) -> _ZipPath:
-        return _ZipPath(self.root, at)
+        return _ZipPath(self._parent, at)
 
-    def _size(self) -> int:
+    def _calc_size(self) -> int:
         if self.is_dir():
-            return sum(subpath._size() for subpath in self.iterdir())
+            return sum(subpath._calc_size() for subpath in self.filtered_paths)
         else:
             return self.size
 
@@ -75,12 +94,37 @@ class _ZipPath(zipfile.Path):
         subs = filter(self._is_child_str, sorted(self.root.namelist()))
         return map(self._next, subs)
 
+    def _filter(self) -> None:
+        """
+        Filter out whitelisted paths and store all subpaths to be checked
+        """
+        clear_print(shrink_str(str(self)), end="")
+        filtered_list: list[_ZipPath] = []
+
+        for subpath in self.iterdir():
+            if subpath.is_dir():
+                if subpath.name in WHITELIST.dirnames:
+                    continue
+                if str(subpath) in WHITELIST.dirpaths:
+                    continue
+                filtered_list.append(subpath)
+                subpath._filter()
+            else:
+                if subpath.name in WHITELIST.filenames:
+                    continue
+                if (subpath_str := str(subpath)) in WHITELIST.filepaths:
+                    continue
+                if any(regex.fullmatch(subpath_str) for regex in WHITELIST.fileregexes):
+                    continue
+                filtered_list.append(subpath)
+
+        self.filtered_paths = filtered_list
+
     def _process_dir(
         self,
         existing_file_props: Optional[FileProps],
         total_progress: Progress,
         calculation_time: CalculationTime,
-        print_walking: bool = True,
     ) -> tuple[list[tuple[str, FileProps]], list[str]]:
         """
         Do `_process` on all files in a folder, recursively, and filter
@@ -92,8 +136,6 @@ class _ZipPath(zipfile.Path):
                 Total progresss dataclass
             calculation_time (CalculationTime):
                 Data for processed calculation time
-            print_walking (bool):
-                Whether to print the directory walking through
 
         Returns:
             (list[tuple[str, FileProps]]):
@@ -101,18 +143,13 @@ class _ZipPath(zipfile.Path):
             (list[str]):
                 List of new file file names
         """
-        if print_walking:
-            clear_print(f"Walking {self}...")
+        clear_print(f"Walking {self}...")
         files: list[_ZipPath] = []
         file_props_list: list[tuple[str, FileProps]] = []
         new_list: list[str] = []
 
-        for subpath in self.iterdir():
+        for subpath in self.filtered_paths:
             if subpath.is_dir():
-                if subpath.name in WHITELIST.dirnames:
-                    continue
-                if str(subpath) in WHITELIST.dirpaths:
-                    continue
                 sub_file_props_list, sub_new_list = subpath._process_dir(
                     existing_file_props,
                     total_progress,
@@ -121,12 +158,6 @@ class _ZipPath(zipfile.Path):
                 file_props_list += sub_file_props_list
                 new_list += sub_new_list
             else:
-                if subpath.name in WHITELIST.filenames:
-                    continue
-                if (subpath_str := str(subpath)) in WHITELIST.filepaths:
-                    continue
-                if any(regex.fullmatch(subpath_str) for regex in WHITELIST.fileregexes):
-                    continue
                 files.append(subpath)
 
         progress = Progress(len(files))
@@ -190,7 +221,7 @@ class _ZipPath(zipfile.Path):
 
         try:
             md5, sha1 = self._hash(dir_progress, total_progress, calculation_time)
-        except PermissionError:
+        except (PermissionError, RuntimeError):
             total_progress.current += self.size
             return None, False
         return (
@@ -252,19 +283,23 @@ class RootZipPath(_ZipPath):
         context manager
     """
 
-    # Technically `zipfile.FastLookup` but no matter
-    root: zipfile.ZipFile
-    at: str
-
-    def __init__(self, path: Path) -> None:
-        super().__init__(path, at="")
+    def __init__(self, path: Path, test: bool = False) -> None:
         self._path = path
+        self._parent = self
+        self.root_fp = self._make()
+        self.root_fp.close()
+        if test:
+            return
+        self.at = ""
+        self._mtime: Optional[float] = None
+        self.filtered_paths: list[_ZipPath] = []
+        with self:
+            self._filter()
+            self._stat_init()
 
     def __enter__(self) -> RootZipPath:
-        if self.root.fp is None:
-            return self.__class__(self._path)
-        else:
-            return self
+        self.root_fp = self._make()
+        return self
 
     def __exit__(self, *_) -> None:
         self.root.close()
@@ -297,5 +332,8 @@ class RootZipPath(_ZipPath):
         """
         with self:
             return self._process_dir(
-                existing_file_props, total_progress, calculation_time, False
+                existing_file_props, total_progress, calculation_time
             )
+
+    def _make(self) -> zipfile.ZipFile:
+        return zipfile.FastLookup.make(self._path)  # type: ignore
