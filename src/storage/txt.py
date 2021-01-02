@@ -1,21 +1,39 @@
 """
-Module: Write to text
+Module: Text output
 
-Public Functions:
-    write_txt
+Public Classes:
+    Txt: Text output
 """
+
 from __future__ import annotations
+
 from pathlib import Path
 
 
-def write_txt(new_list: list[str], new_txt_path: Path) -> None:
+class Txt:
     """
-    Write new stuff to file
+    Text output
 
     Args:
-        new_list     (list[str])   : List of new file paths
-        new_txt_path (pathlib.Path): Path of text file for new files
+        path (pathlib.Path): Text file path
+
+    Public Attributes:
+        path (pathlib.Path): Text file path
+
+    Public Methods:
+        write: Write new file data to text file
     """
-    with new_txt_path.open("w") as new_txt_fp:
-        for new in new_list:
-            print(new, file=new_txt_fp)
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+
+    def write(self, data: list[str]) -> None:
+        """
+        Write new file data to text file
+
+        Args:
+            data (list[str]): List of new file pathss
+        """
+        with self.path.open("w") as fp:
+            for new in data:
+                print(new, file=fp)

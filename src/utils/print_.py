@@ -1,19 +1,20 @@
 """
-Module: Helper functions
+Module: `print`-related helper functions
 
 Public Functions:
-    clear_print
-    progress_str
-    progress_percent
-    shrink_str
+    clear_print          : Clear line and print
+    clear_print_clearable: Clear line and print clearable
+    progress_str         : Generate progress string
+    progress_percent     : Generate progress percentage
+    shrink_str           : Shrink string to fit on console
 """
-from __future__ import annotations
+
 from shutil import get_terminal_size
 from typing import Any, Optional
 
 
 def clear_print(
-    print_text: str,
+    value: str,
     *,
     sep: Optional[str] = None,
     end: Optional[str] = None,
@@ -23,7 +24,20 @@ def clear_print(
     """
     Clear line and print
     """
-    print("\r\x1b[K" + print_text, sep=sep, end=end, file=file, flush=flush)
+    print(f"\r\x1b[K{value}", sep=sep, end=end, file=file, flush=flush)
+
+
+def clear_print_clearable(
+    value: str,
+    *,
+    sep: Optional[str] = None,
+    file: Optional[Any] = None,
+    flush: bool = False,
+) -> None:
+    """
+    Clear line and print clearable
+    """
+    clear_print(value, sep=sep, end="", file=file, flush=flush)
 
 
 def progress_str(current: int, total: int) -> str:
@@ -31,8 +45,8 @@ def progress_str(current: int, total: int) -> str:
     Generate progress string:  1/10
 
     Args:
-        current (int): ID of current element
-        total   (int): Number of total elements
+        current (int): Amount finished
+        total   (int): Total amount
 
     Returns:
         (str): Progress string:  1/10
@@ -46,8 +60,8 @@ def progress_percent(current: int, total: int) -> str:
     Generate progress percentage:  80.785%
 
     Args:
-        current (int): The cumulative size of finished stuff
-        total   (int): The total size of stuff
+        current (int): Amount finished
+        total   (int): Total amount
 
     Returns:
         {str}: Progress percent string:  80.785%
