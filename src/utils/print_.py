@@ -37,7 +37,7 @@ def clear_print_clearable(
     """
     Clear line and print clearable
     """
-    clear_print(value, sep=sep, end="", file=file, flush=flush)
+    clear_print(value.replace("\n", " "), sep=sep, end="", file=file, flush=flush)
 
 
 def progress_str(current: int, total: int) -> str:
