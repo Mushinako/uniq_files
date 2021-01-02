@@ -1,67 +1,83 @@
 """
-Module: Parse time
+Module: Calculation progress
 
 Public Classes:
-    Progress
-    CalculationTime
-    TimeTaken
+    Progress : Code run progress
+    ETA      : ETA to code finish
+    TotalTime: Total time taken by code
 """
 
 from dataclasses import dataclass
 from time import time
 
-from .print_funcs import progress_percent, progress_str
+from .print_ import progress_percent, progress_str
 
 
 @dataclass
 class Progress:
     """
-    Progress recording
+    Code run progress
+
+    Args:
+        total   (int): Total number of elements
+        current (int): ID of current element
+
+    Public Attributes:
+        total   (int)         : Total number of elements
+        current (int)         : ID of current element
+        string  (readonly str): String representation of progress
+        percent (readonly str): Percent representation of progress
     """
 
     total: int
     current: int = 0
-
-    def __str__(self) -> str:
-        return self.string
 
     @property
     def string(self) -> str:
         return progress_str(self.current, self.total)
 
     @property
-    def percentage(self) -> str:
+    def percent(self) -> str:
         return progress_percent(self.current, self.total)
 
 
 @dataclass
-class CalculationTime:
+class ETA:
     """
-    Calculation time recording
+    ETA to code finish
+
+    Args:
+        left       (int)  : Number of elements left
+        processed  (int)  : ID of current element
+        time_taken (float): Time taken for all processed elements
+
+    Public Attributes:
+        left       (int)         : Number of elements left
+        processed  (int)         : ID of current element
+        time_taken (float)       : Time taken for all processed elements
+        string     (readonly str): String representation of ETA
     """
 
     left: int
     processed: int = 0
     time_taken: float = 0.0
 
-    def __str__(self) -> str:
-        return _time_str_short(self.time_taken)
-
     @property
-    def time_left(self) -> str:
+    def string(self) -> str:
         return _time_remaining(self.left, self.processed, self.time_taken)
 
 
 @dataclass
-class TimeTaken:
+class TotalTime:
     """
-    Total time running taken
+    Total time taken by code
+
+    Public Attributes:
+        start  (float)       : Unix timestamp when code started
+        string (readonly str): String representation of total time taken
     """
 
     start: float = time()
-
-    def __str__(self) -> str:
-        return self.string
 
     @property
     def string(self) -> str:
@@ -118,9 +134,9 @@ def _time_remaining(left: int, processed: int, time_taken: float) -> str:
     Calculate time remaining
 
     Args:
-        left       (int): Amount of work left
-        processed  (int): Amount of work processed
-        time_taken (float): Time taken so far
+        left       (int)  : Number of elements left
+        processed  (int)  : ID of current element
+        time_taken (float): Time taken for all processed elements
 
     Returns:
         (str): Remaining time string

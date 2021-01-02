@@ -2,7 +2,8 @@
 Module: Configurations
 
 Public Constants:
-    WHITELIST (_Whitelist): All the whitelists
+    WHITELIST  (_Whitelist): All the whitelists
+    CHUNK_SIZE (int)       : File read chunk size
 """
 import re
 from dataclasses import dataclass
@@ -17,7 +18,11 @@ _WHITELIST_DIRNAMES: list[str] = [
     "node_modules",
 ]
 _WHITELIST_DIRPATHS: list[str] = []
-_WHITELIST_FILENAMES: list[str] = [".gitignore", "__init__.py"]
+_WHITELIST_FILENAMES: list[str] = [
+    ".gitignore",
+    ".gitattributes",
+    "__init__.py",
+]
 _WHITELIST_FILEPATHS: list[str] = []
 _WHITELIST_FILEREGEXES: list[str] = []
 
@@ -42,3 +47,5 @@ WHITELIST = _Whitelist(
     set(_WHITELIST_FILEPATHS),
     [re.compile(regex) for regex in _WHITELIST_FILEREGEXES],
 )
+
+CHUNK_SIZE = 1 << 26  # 64 MiB

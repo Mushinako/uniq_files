@@ -1,110 +1,85 @@
 """
-Module: Write to JSON
+Module: Writing to JSON file
+
+Public Classes:
+    Json: JSON output
 
 Public Functions:
-    write_json
-    write_json_w_small
+    split_duplication_data: Split duplications into large- and small-file lists
 """
-from __future__ import annotations
-import json
+
+from json import dump as json_dump
 from pathlib import Path
-from typing import Union
 
-from ..parse_argv import SMALL_SIZE
+from ..data.duplication import Duplication
+from ..utils.print_ import clear_print
 
 
-def write_json(
-    dup_list: list[tuple[tuple[int, str, str], list[str]]],
-    dup_json_path: Path,
-) -> None:
+class Json:
     """
-    Write duplication stuff to JSON
+    JSON output
 
     Args:
-        dup_list (list[tuple[tuple[int, str, str], list[str]]]):
-            List of duplication data
-        dup_json_path (pathlib.Path):
-            Path of JSON file for all duplications
+        path (pathlib.Path): JSON file path
+
+    Public Attributes:
+        path (pathlib.Path): JSON file path
+
+    Public Methods:
+        write: Write duplication data to JSON file
     """
-    # Get duplications
-    formatted_data = [
-        {
-            "properties": {
-                "size": size,
-                "hashes": {
-                    "md5": md5,
-                    "sha1": sha1,
-                },
-            },
-            "paths": file_paths,
-        }
-        for (size, md5, sha1), file_paths in dup_list
-    ]
 
-    with dup_json_path.open("w") as dup_json_fp:
-        json.dump(formatted_data, dup_json_fp, indent=2)
+    def __init__(self, path: Path) -> None:
+        self.path = path
+
+    def write(self, duplications: list[Duplication], duplication_name: str) -> None:
+        """
+        Write duplication data to JSON file
+
+        Args:
+            duplications     (list[Duplication]): Duplication data to be written
+            duplication_name (str)              : Duplication name. For printing only
+        """
+        clear_print(f"Writing {duplication_name} JSON to {self.path}...")
+
+        with self.path.open("w") as fp:
+            json_dump(
+                [duplication.to_json_dict() for duplication in duplications],
+                fp,
+                indent=2,
+            )
 
 
-def write_json_w_small(
-    dup_list: list[tuple[tuple[int, str, str], list[str]]],
-    large_json_path: Path,
-    small_json_path: Path,
-    small_size: int = SMALL_SIZE,
-) -> None:
+def split_duplication_data(
+    duplications: list[Duplication], small_size: int
+) -> tuple[list[Duplication], list[Duplication]]:
     """
-    Write duplication stuff to JSON, separating large and small files
+    Split duplications into large- and small-file lists, where large-file list
+        contains all the duplications with file sizes strictly larger than
+        `small_size`, and small-file list containing the rest
 
     Args:
-        dup_list (list[tuple[tuple[int, str, str], list[str]]]):
-            List of duplication data
-        large_json_path (pathlib.Path):
-            Path of JSON file for large duplications
-        small_json_path (pathlib.Path):
-            Path of JSON file for small duplications
+        duplicatins (list[Duplication]):
+            All duplications
         small_size (int):
-            Threshold above which file is considered "large"
+            Threshold beyond which a file is considered large
+
+    Returns:
+        (list[Duplication]): Large duplication lists
+        (list[Duplication]): Small duplication lists
     """
-    small_list: list[
-        dict[str, Union[dict[str, Union[int, dict[str, str]]], list[str]]]
-    ] = []
-    large_list: list[
-        dict[str, Union[dict[str, Union[int, dict[str, str]]], list[str]]]
-    ] = []
+    duplication_iter = iter(sorted(duplications))
 
-    dup_iter = iter(dup_list)
+    large_duplications: list[Duplication] = []
+    small_duplications: list[Duplication] = []
 
-    for (size, md5, sha1), file_paths in dup_iter:
-        formatted_datum = {
-            "properties": {
-                "size": size,
-                "hashes": {
-                    "md5": md5,
-                    "sha1": sha1,
-                },
-            },
-            "paths": file_paths,
-        }
-        if size > small_size:
-            large_list.append(formatted_datum)
+    for duplication in duplication_iter:
+        if duplication.size > small_size:
+            large_duplications.append(duplication)
             break
         else:
-            small_list.append(formatted_datum)
+            small_duplications.append(duplication)
 
-    large_list += [
-        {
-            "properties": {
-                "size": size,
-                "hashes": {
-                    "md5": md5,
-                    "sha1": sha1,
-                },
-            },
-            "paths": file_paths,
-        }
-        for (size, md5, sha1), file_paths in dup_iter
-    ]
+    large_duplications += list(duplication_iter)
 
-    with large_json_path.open("w") as large_json_fp:
-        json.dump(large_list, large_json_fp, indent=2)
-    with small_json_path.open("w") as small_json_fp:
-        json.dump(small_list, small_json_fp, indent=2)
+    return large_duplications, small_duplications

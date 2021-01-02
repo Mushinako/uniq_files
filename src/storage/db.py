@@ -1,97 +1,118 @@
 """
 Module: Reading from and writing to sqlite3 database
 
-Public Functions:
-    read_db
-    write_db
+Public Classes:
+    DB: Database I/O
 """
-from __future__ import annotations
+
 import sqlite3
-from pathlib import Path
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Generator
 
-from ..file_handler.file_prop import FileProps
+from ..data.file_stat import FileStat, DatabaseRow
+from ..utils.print_ import clear_print
 
 
-_TABLE_NAME = "files"
-_CREATE_TABLE_CMD = f"""
-CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
-    path TEXT PRIMARY KEY,
-    size TEXT NOT NULL,
-    last_modified TEXT NOT NULL,
-    md5 TEXT NOT NULL,
-    sha1 TEXT NOT NULL
-);
-"""
-_TRUNCATE_TABLE_CMD = f"DELETE FROM {_TABLE_NAME};"
-_SELECT_TABLE_CMD = f"""
-SELECT path, size, last_modified, md5, sha1
-FROM {_TABLE_NAME};
-"""
-_INSERT_TABLE_CMD = f"""
-INSERT INTO {_TABLE_NAME} (path, size, last_modified, md5, sha1)
-VALUES (?, ?, ?, ?, ?);
-"""
-
-
-def read_db(db_path: Path) -> dict[str, FileProps]:
+class Db:
     """
-    Read database at given path and returns data in a dictionary
+    Database I/O
 
     Args:
-        db_path (pathlib.Path): DB file path
+        path (pathlib.Path): Database file path
 
-    Returns:
-        (dict[str, File_Props]): Existing path string-file property mapping
+    Public Attributes:
+        path (pathlib.Path): Database file path
+
+    Public Methods:
+        read : Read data from database file
+        write: Write data to database file
     """
-    files_props: dict[str, FileProps] = {}
-    with _open_db(db_path) as con:
-        with con:
-            con.execute(_CREATE_TABLE_CMD)
-        cursor = con.execute(_SELECT_TABLE_CMD)
-        data: list[tuple[str, str, str, str, str]] = cursor.fetchall()
-        for path, size_str, last_modified_str, md5, sha1 in data:
-            files_props[path] = FileProps(
-                path, int(size_str), float(last_modified_str), md5, sha1
-            )
-    return files_props
 
-
-def write_db(files_props: list[FileProps], db_path: Path) -> None:
+    _TABLE_NAME = "files"
+    _CREATE_TABLE_CMD = f"""
+    CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
+        path TEXT PRIMARY KEY,
+        size TEXT NOT NULL,
+        last_modified TEXT NOT NULL,
+        md5 TEXT NOT NULL,
+        sha1 TEXT NOT NULL
+    );
     """
-    Write database at given path
-
-    Args:
-        files_props (list[FileProps]): Stuff to be written to the database
-        db_path     (pathlib.Path)   : DB file path
+    _SELECT_ROWS_CMD = f"""
+    SELECT path, size, last_modified, md5, sha1
+    FROM {_TABLE_NAME};
     """
-    with _open_db(db_path) as con:
-        with con:
-            con.execute(_TRUNCATE_TABLE_CMD)
-        with con:
-            con.executemany(
-                _INSERT_TABLE_CMD,
-                (
-                    (str(fp.path), str(fp.size), str(fp.mtime), fp.md5, fp.sha1)
-                    for fp in files_props
-                ),
-            )
-
-
-@contextmanager
-def _open_db(db_path: Path) -> Generator[sqlite3.Connection, None, None]:
+    _INSERT_ROW_CMD = f"""
+    INSERT INTO {_TABLE_NAME} (path, size, last_modified, md5, sha1)
+    VALUES (?, ?, ?, ?, ?);
     """
-    Context manager for the sqlite3 database
-
-    Args:
-        db_path (pathlib.Path): DB file path
-
-    Yields:
-        (sqlite3.Connection): DB connection
+    _DELETE_ROW_CMD = f"""
+    DELETE FROM {_TABLE_NAME}
+    WHERE path = ?;
     """
-    con = sqlite3.connect(db_path)
-    try:
-        yield con
-    finally:
-        con.close()
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+
+    def read(self) -> dict[str, FileStat]:
+        """
+        Read data from database file
+
+        Returns:
+            (dict[str, File_Props]): Existing path string-file property mapping
+        """
+        clear_print("Reading DB...")
+
+        file_stats: dict[str, FileStat] = {}
+
+        with self._open_db() as con:
+            with con:
+                con.execute(Db._CREATE_TABLE_CMD)
+
+            cursor = con.execute(Db._SELECT_ROWS_CMD)
+            data: list[DatabaseRow] = cursor.fetchall()
+
+            for row in data:
+                file_stats[row[0]] = FileStat.from_db_row(row)
+
+        clear_print(f"Read {len(file_stats)} entries from DB")
+        return file_stats
+
+    def write(self, file_stats: list[FileStat], removed_path_strs: list[str]) -> None:
+        """
+        Write data to database file
+
+        Args:
+            file_stats (list[FileStat]):
+                List of file stats to write to the db
+            removed_path_strs (list[str]):
+                List of paths removed
+        """
+        clear_print(f"Writing all file data DB to {self.path}...")
+
+        with self._open_db() as con:
+            with con:
+                con.executemany(
+                    Db._DELETE_ROW_CMD, ((path,) for path in removed_path_strs)
+                )
+
+            with con:
+                con.executemany(
+                    Db._INSERT_ROW_CMD,
+                    (file_stat.to_db_row() for file_stat in file_stats),
+                )
+
+    @contextmanager
+    def _open_db(self) -> Generator[sqlite3.Connection, None, None]:
+        """
+        Context manager for opening the sqlite3 database
+
+        Yields:
+            (sqlite3.Connection): DB connection
+        """
+        con = sqlite3.connect(self.path)
+        try:
+            yield con
+        finally:
+            con.close()

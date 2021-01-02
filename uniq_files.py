@@ -1,57 +1,37 @@
-#!/usr/bin/env python3
-from __future__ import annotations
+#!/usr/bin/env python3.9
 
-from itertools import tee
-
-from src.utils.print_funcs import clear_print
 from src.parse_argv import parse_argv
-from src.storage.db import read_db, write_db
-from src.storage.json_ import write_json, write_json_w_small
-from src.dirs.dir_.walker import parse_dir
-from src.file_handler.calc_size import calc_total_size
-from src.file_handler.inspect_files import inspect_all_files
-from src.storage.txt import write_txt
-from src.utils.time_ import TimeTaken
+from src.storage.json_ import split_duplication_data
+from src.tree import make_tree, walk_tree
+from src.utils.progress import TotalTime
 
 
 def main():
-    time_taken = TimeTaken()
+    total_time = TotalTime()
     # Parse command-line arguments
     args = parse_argv()
     # Read DB
-    clear_print("Reading DB...", end="")
-    db_data = read_db(args.db_path)
-    clear_print(f"Read {len(db_data)} entries from DB")
-    # Make 2 generators
-    files_gen_size, files_gen_inspect = tee(parse_dir(args.dir_path), 2)
-    # Get total size estimate
-    clear_print(f"Calculating total size...")
-    total_size = calc_total_size(files_gen_size)
-    clear_print(f"Total file size: {total_size:,}")
+    db_data = args.db.read()
+    # Get total size estimate, and make tree
+    root_dir = make_tree(args.dir_path)
     # Walk through all files
-    dup_list, files_props, new_files = inspect_all_files(
-        files_gen_inspect, db_data, total_size
-    )
-    # Write JSON
-    if args.small_json_path is None:
-        clear_print(f"Writing duplication JSON to {args.dup_json_path}...")
-        write_json(dup_list, args.dup_json_path)
+    duplications, new_file_stats, removed_path_strs = walk_tree(root_dir, db_data)
+    # Write duplication data
+    if args.small_json is None:
+        args.dup_json.write(duplications, "duplications")
     else:
-        clear_print(
-            f"Writing duplication JSON to {args.dup_json_path} and {args.small_json_path}..."
+        large_duplications, small_duplications = split_duplication_data(
+            duplications, args.small_size
         )
-        write_json_w_small(
-            dup_list, args.dup_json_path, args.small_json_path, args.small_size
-        )
-    # Write DB
-    clear_print(f"Writing all file data DB to {args.db_path}...")
-    write_db(files_props, args.db_path)
-    # Write text
-    if args.new_txt_path is not None:
-        clear_print(f"Writing new file paths to {args.new_txt_path}")
-        write_txt(new_files, args.new_txt_path)
+        args.dup_json.write(large_duplications, "large duplications")
+        args.small_json.write(small_duplications, "small duplications")
+    # Write all file data
+    args.db.write(new_file_stats, removed_path_strs)
+    # Write new file paths
+    if args.new_txt is not None:
+        args.new_txt.write((file_stat.path for file_stat in new_file_stats))
     # Total time used
-    print(f"Time taken: {time_taken.string}")
+    print(f"Time taken: {total_time.string}")
 
 
 if __name__ == "__main__":
