@@ -321,7 +321,7 @@ class RootZipPath(ZipPath):
             try:
                 with self:
                     pass
-            except (zipfile.BadZipFile, NotImplementedError) as err:
+            except (zipfile.BadZipFile, NotImplementedError, FileNotFoundError) as err:
                 raise InvalidDirectoryType from err
             return
         self._parent = self
