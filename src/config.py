@@ -20,6 +20,7 @@ _WHITELIST_DIRNAMES: list[str] = [
 _WHITELIST_DIRPATHS: list[str] = []
 _WHITELIST_FILENAMES: list[str] = [
     ".gitignore",
+    ".gitattributes",
     "__init__.py",
 ]
 _WHITELIST_FILEPATHS: list[str] = []

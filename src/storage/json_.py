@@ -12,6 +12,7 @@ from json import dump as json_dump
 from pathlib import Path
 
 from ..data.duplication import Duplication
+from ..utils.print_ import clear_print
 
 
 class Json:
@@ -31,13 +32,16 @@ class Json:
     def __init__(self, path: Path) -> None:
         self.path = path
 
-    def write(self, duplications: list[Duplication]) -> None:
+    def write(self, duplications: list[Duplication], duplication_name: str) -> None:
         """
         Write duplication data to JSON file
 
         Args:
-            duplications (list[Duplication]): Duplication data to be written
+            duplications     (list[Duplication]): Duplication data to be written
+            duplication_name (str)              : Duplication name. For printing only
         """
+        clear_print(f"Writing {duplication_name} JSON to {self.path}...")
+
         with self.path.open("w") as fp:
             json_dump(
                 [duplication.to_json_dict() for duplication in duplications],

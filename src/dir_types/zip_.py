@@ -21,7 +21,7 @@ from .utils.check_whitelist import check_dir, check_file
 from .utils.error import InvalidDirectoryType, NotAFileError
 from ..config import CHUNK_SIZE
 from ..data.file_stat import FileStat
-from ..utils.print_ import clear_print, clear_print_clearable, shrink_str
+from ..utils.print_ import clear_print_clearable, shrink_str
 from ..utils.progress import ETA, Progress
 
 
@@ -139,7 +139,6 @@ class ZipPath(zipfile.Path):
         if not self.is_dir():
             raise NotADirectoryError(f"Not a directory: {self}")
 
-        clear_print(f"Checking {self}")
         file_stats: list[FileStat] = []
         new_path_strs: list[str] = []
 
@@ -200,7 +199,7 @@ class ZipPath(zipfile.Path):
 
             clear_print_clearable(
                 shrink_str(
-                    self.name,
+                    str(self),
                     prefix=f"{total_progress.percent} {dir_progress_str}",
                     postfix=eta.string,
                 )
@@ -259,7 +258,7 @@ class ZipPath(zipfile.Path):
 
                 clear_print_clearable(
                     shrink_str(
-                        self.name,
+                        str(self),
                         prefix=f"{total_progress.percent} {dir_progress_str}",
                         postfix=f"[Chunk {chunk_progress.string}] {eta.string}",
                     )

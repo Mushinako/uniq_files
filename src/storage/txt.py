@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from ..utils.print_ import clear_print
+
 
 class Txt:
     """
@@ -34,6 +36,8 @@ class Txt:
         Args:
             data (list[str]): List of new file pathss
         """
+        clear_print(f"Writing new file paths to {self.path}")
+
         with self.path.open("w") as fp:
             for new in data:
                 print(new, file=fp)

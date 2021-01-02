@@ -83,6 +83,8 @@ class Db:
         Args:
             file_stats (list[FileStat]): List of file stats to write to the db
         """
+        clear_print(f"Writing all file data DB to {self.path}...")
+
         with self._open_db() as con:
             with con:
                 con.execute(Db._TRUNCATE_TABLE_CMD)

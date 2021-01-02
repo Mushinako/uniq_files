@@ -56,7 +56,7 @@ def walk_tree(
     file_stats, new_path_strs = root_dir.process_dir(
         existing_file_stats, total_progress, eta
     )
-    clear_print(f"Read {len(file_stats)} files, of which {len(new_path_strs)} are new")
+    clear_print(f"Found {len(file_stats)} files, of which {len(new_path_strs)} are new")
 
     clear_print("Finding duplicates...")
     potential_duplications: defaultdict[IdStat, list[str]] = defaultdict(list)
