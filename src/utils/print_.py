@@ -37,7 +37,7 @@ def clear_print_clearable(
     """
     Clear line and print clearable
     """
-    clear_print(value.replace("\n", " "), sep=sep, end="", file=file, flush=flush)
+    clear_print(value.translate(_CHAR_TRANS), sep=sep, end="", file=file, flush=flush)
 
 
 def progress_str(current: int, total: int) -> str:
@@ -95,3 +95,11 @@ def shrink_str(shrink: str, *, prefix: str = "", postfix: str = "") -> str:
     if shrinked != shrink:
         shrink = shrinked[:-3] + "..."
     return f"{prefix} {shrink} {postfix}"
+
+
+_CHAR_TRANS = str.maketrans(
+    {
+        "\n": " ",
+        "\x84": "\\x84",
+    }
+)

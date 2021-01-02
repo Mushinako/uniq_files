@@ -35,7 +35,7 @@ def make_tree(base_path: Path) -> DirPath:
 
 def walk_tree(
     root_dir: DirPath, existing_file_stats: dict[str, FileStat]
-) -> tuple[list[Duplication], list[FileStat], dict[str, FileStat]]:
+) -> tuple[list[Duplication], list[FileStat], list[str]]:
     """
     Get duplication data
 
@@ -55,6 +55,7 @@ def walk_tree(
     eta = ETA(root_dir.size)
     leftover_file_stats = existing_file_stats.copy()
     new_file_stats = root_dir.process_dir(leftover_file_stats, total_progress, eta)
+    new_file_stats.sort()
     clear_print(
         f"Found {root_dir.length} files, of which {len(new_file_stats)} are new"
     )
