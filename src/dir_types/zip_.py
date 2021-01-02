@@ -362,8 +362,14 @@ class RootZipPath(ZipPath):
             (list[FileStat]): Properties of all files under this folder
             (list[str])     : All new file path strings
         """
-        with self:
-            return super().process_dir(existing_file_stats, total_progress, eta)
+        try:
+            with self:
+                return super().process_dir(existing_file_stats, total_progress, eta)
+        except FileNotFoundError:
+            # The file may have been deleted since then
+            total_progress.current += self.size
+            eta.left -= self.size
+            return [], []
 
     def _make(self) -> zipfile.ZipFile:
         """

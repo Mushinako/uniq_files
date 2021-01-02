@@ -211,7 +211,7 @@ class DirPath(Path):
 
         try:
             md5_str, sha1_str = self._hash(dir_progress_str, total_progress, eta)
-        except PermissionError:
+        except (PermissionError, FileNotFoundError):
             total_progress.current += self.size
             eta.left -= self.size
             return None, False
