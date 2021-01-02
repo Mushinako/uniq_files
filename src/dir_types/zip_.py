@@ -200,8 +200,7 @@ class ZipPath(zipfile.Path):
             clear_print_clearable(
                 shrink_str(
                     str(self),
-                    prefix=f"{total_progress.percent} {dir_progress_str}",
-                    postfix=eta.string,
+                    prefix=f"{total_progress.percent} {eta.string} {dir_progress_str}",
                 )
             )
 
@@ -259,8 +258,10 @@ class ZipPath(zipfile.Path):
                 clear_print_clearable(
                     shrink_str(
                         str(self),
-                        prefix=f"{total_progress.percent} {dir_progress_str}",
-                        postfix=f"[Chunk {chunk_progress.string}] {eta.string}",
+                        prefix=(
+                            f"{total_progress.percent} {eta.string} "
+                            f"{dir_progress_str} [Chunk {chunk_progress.string}]"
+                        ),
                     )
                 )
 
