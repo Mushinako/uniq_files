@@ -90,7 +90,7 @@ def shrink_str(shrink: str, *, prefix: str = "", postfix: str = "") -> str:
             char = next(orig_str_iter)
         except StopIteration:
             break
-        counter += 1 if char.isascii() else 3
+        counter += 1 if char.isascii() else 2
         shrinked += char
     if shrinked != shrink:
         shrink = shrinked[:-3] + "..."
