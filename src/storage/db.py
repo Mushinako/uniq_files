@@ -39,14 +39,17 @@ class Db:
         sha1 TEXT NOT NULL
     );
     """
-    _TRUNCATE_TABLE_CMD = f"DELETE FROM {_TABLE_NAME};"
-    _SELECT_TABLE_CMD = f"""
+    _SELECT_ROWS_CMD = f"""
     SELECT path, size, last_modified, md5, sha1
     FROM {_TABLE_NAME};
     """
-    _INSERT_TABLE_CMD = f"""
+    _INSERT_ROW_CMD = f"""
     INSERT INTO {_TABLE_NAME} (path, size, last_modified, md5, sha1)
     VALUES (?, ?, ?, ?, ?);
+    """
+    _DELETE_ROW_CMD = f"""
+    DELETE FROM {_TABLE_NAME}
+    WHERE path = ?;
     """
 
     def __init__(self, path: Path) -> None:
@@ -67,7 +70,7 @@ class Db:
             with con:
                 con.execute(Db._CREATE_TABLE_CMD)
 
-            cursor = con.execute(Db._SELECT_TABLE_CMD)
+            cursor = con.execute(Db._SELECT_ROWS_CMD)
             data: list[DatabaseRow] = cursor.fetchall()
 
             for row in data:
@@ -76,22 +79,27 @@ class Db:
         clear_print(f"Read {len(file_stats)} entries from DB")
         return file_stats
 
-    def write(self, file_stats: list[FileStat]) -> None:
+    def write(self, file_stats: list[FileStat], removed_path_strs: list[str]) -> None:
         """
         Write data to database file
 
         Args:
-            file_stats (list[FileStat]): List of file stats to write to the db
+            file_stats (list[FileStat]):
+                List of file stats to write to the db
+            removed_path_strs (list[str]):
+                List of paths removed
         """
         clear_print(f"Writing all file data DB to {self.path}...")
 
         with self._open_db() as con:
             with con:
-                con.execute(Db._TRUNCATE_TABLE_CMD)
+                con.executemany(
+                    Db._DELETE_ROW_CMD, ((path,) for path in removed_path_strs)
+                )
 
             with con:
                 con.executemany(
-                    Db._INSERT_TABLE_CMD,
+                    Db._INSERT_ROW_CMD,
                     (file_stat.to_db_row() for file_stat in file_stats),
                 )
 

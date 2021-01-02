@@ -15,7 +15,7 @@ def main():
     # Get total size estimate, and make tree
     root_dir = make_tree(args.dir_path)
     # Walk through all files
-    duplications, file_stats, new_path_strs = walk_tree(root_dir, db_data)
+    duplications, new_file_stats, removed_path_strs = walk_tree(root_dir, db_data)
     # Write duplication data
     if args.small_json is None:
         args.dup_json.write(duplications, "duplications")
@@ -26,10 +26,10 @@ def main():
         args.dup_json.write(large_duplications, "large duplications")
         args.small_json.write(small_duplications, "small duplications")
     # Write all file data
-    args.db.write(file_stats)
+    args.db.write(new_file_stats, removed_path_strs)
     # Write new file paths
     if args.new_txt is not None:
-        args.new_txt.write(new_path_strs)
+        args.new_txt.write((file_stat.path for file_stat in new_file_stats))
     # Total time used
     print(f"Time taken: {total_time.string}")
 

@@ -35,7 +35,7 @@ def make_tree(base_path: Path) -> DirPath:
 
 def walk_tree(
     root_dir: DirPath, existing_file_stats: dict[str, FileStat]
-) -> tuple[list[Duplication], list[FileStat], list[str]]:
+) -> tuple[list[Duplication], list[FileStat], dict[str, FileStat]]:
     """
     Get duplication data
 
@@ -48,20 +48,26 @@ def walk_tree(
     Returns:
         (list[Duplication]): All duplications
         (list[FileStat])   : All file properties
-        (list[str])        : All new files
+        (list[str])        : Records to be removed from the database
     """
     clear_print("Getting all file data...")
     total_progress = Progress(root_dir.size)
     eta = ETA(root_dir.size)
-    file_stats, new_path_strs = root_dir.process_dir(
-        existing_file_stats, total_progress, eta
+    leftover_file_stats = existing_file_stats.copy()
+    new_file_stats = root_dir.process_dir(leftover_file_stats, total_progress, eta)
+    clear_print(
+        f"Found {root_dir.length} files, of which {len(new_file_stats)} are new"
     )
-    clear_print(f"Found {len(file_stats)} files, of which {len(new_path_strs)} are new")
 
     clear_print("Finding duplicates...")
     potential_duplications: defaultdict[IdStat, list[str]] = defaultdict(list)
 
-    for file_stat in file_stats:
+    for path_str, file_stat in existing_file_stats.items():
+        if path_str in leftover_file_stats:
+            continue
+        potential_duplications[file_stat.to_id_stat()].append(path_str)
+
+    for file_stat in new_file_stats:
         potential_duplications[file_stat.to_id_stat()].append(file_stat.path)
 
     duplications: list[Duplication] = []
@@ -73,4 +79,4 @@ def walk_tree(
     duplications.sort()
 
     clear_print(f"Found {len(duplications)} groups of duplicates")
-    return duplications, file_stats, new_path_strs
+    return duplications, new_file_stats, sorted(leftover_file_stats)

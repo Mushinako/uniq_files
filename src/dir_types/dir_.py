@@ -41,6 +41,8 @@ class DirPath(Path):
         mtime (float):
             Last modified time of the file. For directories, it's not used and
             defaulted to current time
+        length (int):
+            Number of files under this directory, or 1 if the path is a file
 
     Public Methods:
         process_dir:
@@ -113,17 +115,20 @@ class DirPath(Path):
             file_size_total = sum(path.size for path in self._filtered_files)
             self.size = dir_size_total + file_size_total
             self.mtime = time()
+            dir_length_total = sum(path.length for path in self._filtered_dirs)
+            self.length = dir_length_total + len(self._filtered_files)
         elif self.is_file():
             stats = self.stat()
             self.size = stats.st_size
             self.mtime = stats.st_mtime
+            self.length = 1
 
     def process_dir(
         self,
         existing_file_stats: dict[str, FileStat],
         total_progress: Progress,
         eta: ETA,
-    ) -> tuple[list[FileStat], list[str]]:
+    ) -> list[FileStat]:
         """
         Inspect all the files in this directory and get relevant properties
 
@@ -137,13 +142,11 @@ class DirPath(Path):
 
         Returns:
             (list[FileStat]): Properties of all files under this folder
-            (list[str])     : All new file path strings
         """
         if not self.is_dir():
             raise NotADirectoryError(f"Not a directory: {self}")
 
-        file_stats: list[FileStat] = []
-        new_path_strs: list[str] = []
+        new_file_stats: list[FileStat] = []
 
         dir_progress = Progress(len(self._filtered_files))
 
@@ -151,23 +154,19 @@ class DirPath(Path):
             dir_progress.current += 1
             existing_file_stat = existing_file_stats.get(str(file))
             dir_progress_str = f"[{dir_progress.string}]"
-            file_stat, is_new = file.process_file(
+            new_file_stat = file.process_file(
                 existing_file_stat, dir_progress_str, total_progress, eta
             )
-            if file_stat is None:
-                continue
-            file_stats.append(file_stat)
-            if is_new:
-                new_path_strs.append(str(self))
+            if new_file_stat is not None:
+                new_file_stats.append(new_file_stat)
 
         for dir_ in self._filtered_dirs:
-            sub_file_stats, sub_new_path_strs = dir_.process_dir(
+            sub_new_file_stats = dir_.process_dir(
                 existing_file_stats, total_progress, eta
             )
-            file_stats += sub_file_stats
-            new_path_strs += sub_new_path_strs
+            new_file_stats += sub_new_file_stats
 
-        return file_stats, new_path_strs
+        return new_file_stats
 
     def process_file(
         self,
@@ -175,7 +174,7 @@ class DirPath(Path):
         dir_progress_str: str,
         total_progress: Progress,
         eta: ETA,
-    ) -> tuple[Optional[FileStat], bool]:
+    ) -> Optional[FileStat]:
         """
         Inspect this file and get relevant properties
 
@@ -191,7 +190,6 @@ class DirPath(Path):
 
         Returns:
             (FileStat | None): Properties of this file, if can be inferred
-            (bool)           : Whether the file is new
         """
         if not self.is_file():
             raise NotAFileError(f"Not a file: {self}")
@@ -207,16 +205,16 @@ class DirPath(Path):
                 )
             )
 
-            return existing_file_stat, False
+            return None
 
         try:
             md5_str, sha1_str = self._hash(dir_progress_str, total_progress, eta)
         except (PermissionError, FileNotFoundError):
             total_progress.current += self.size
             eta.left -= self.size
-            return None, False
+            return None
 
-        return FileStat(str(self), self.size, self.mtime, md5_str, sha1_str), True
+        return FileStat(str(self), self.size, self.mtime, md5_str, sha1_str)
 
     def _hash(
         self,

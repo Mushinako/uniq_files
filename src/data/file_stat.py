@@ -49,6 +49,9 @@ class FileStat:
     md5: str
     sha1: str
 
+    def __lt__(self, other: FileStat) -> bool:
+        return self.path < other.path
+
     def to_db_row(self) -> DatabaseRow:
         """
         Export to database row. Namely, a collection of strings
