@@ -54,7 +54,11 @@ def walk_tree(
     total_progress = Progress(root_dir.size)
     eta = ETA(root_dir.size)
     leftover_file_stats = existing_file_stats.copy()
-    new_file_stats = root_dir.process_dir(leftover_file_stats, total_progress, eta)
+    new_file_stats: list[FileStat] = []
+    try:
+        root_dir.process_dir(leftover_file_stats, total_progress, eta, new_file_stats)
+    except KeyboardInterrupt:
+        clear_print("KeyboardInterrupt detected; stopping...")
     new_file_stats.sort()
     clear_print(
         f"Found {root_dir.length} files, of which {len(new_file_stats)} are new"
