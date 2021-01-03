@@ -1,7 +1,8 @@
-**/.git/
-**/.vscode/
-**/__pycache__/
-**/*.json
-**/*.sqlite3
-**/*.db
-**/bak/
+.git/
+.vscode/
+__pycache__/
+*.json
+*.sqlite3
+*.db
+*.sh
+bak/
