@@ -125,7 +125,8 @@ class ZipPath(zipfile.Path):
         existing_file_stats: dict[str, FileStat],
         total_progress: Progress,
         eta: ETA,
-    ) -> list[FileStat]:
+        new_file_stats: list[FileStat],
+    ) -> None:
         """
         Inspect all the files in this directory and get relevant properties
 
@@ -136,14 +137,11 @@ class ZipPath(zipfile.Path):
                 Total progress data
             eta (ETA):
                 ETA data
-
-        Returns:
-            (list[FileStat]): Properties of all files under this folder
+            new_file_stats (list[FileStat]):
+                Properties of all files visitied
         """
         if not self.is_dir():
             raise NotADirectoryError(f"Not a directory: {self}")
-
-        new_file_stats: list[FileStat] = []
 
         dir_progress = Progress(len(self._filtered_files))
 
@@ -151,19 +149,16 @@ class ZipPath(zipfile.Path):
             dir_progress.current += 1
             existing_file_stat = existing_file_stats.pop(str(file), None)
             dir_progress_str = f"[{dir_progress.string}]"
-            new_file_stat = file.process_file(
-                existing_file_stat, dir_progress_str, total_progress, eta
+            file.process_file(
+                existing_file_stat,
+                dir_progress_str,
+                total_progress,
+                eta,
+                new_file_stats,
             )
-            if new_file_stat is not None:
-                new_file_stats.append(new_file_stat)
 
         for dir_ in self._filtered_dirs:
-            sub_new_file_stats = dir_.process_dir(
-                existing_file_stats, total_progress, eta
-            )
-            new_file_stats += sub_new_file_stats
-
-        return new_file_stats
+            dir_.process_dir(existing_file_stats, total_progress, eta, new_file_stats)
 
     def process_file(
         self,
@@ -171,7 +166,8 @@ class ZipPath(zipfile.Path):
         dir_progress_str: str,
         total_progress: Progress,
         eta: ETA,
-    ) -> Optional[FileStat]:
+        new_file_stats: list[FileStat],
+    ) -> None:
         """
         Inspect this file and get relevant properties
 
@@ -184,9 +180,8 @@ class ZipPath(zipfile.Path):
                 Total progress data
             eta (ETA):
                 ETA data
-
-        Returns:
-            (FileStat | None): Properties of this file, if can be inferred
+            new_file_stats (list[FileStat]):
+                Properties of all files visitied
         """
         if not self.is_file():
             raise NotAFileError(f"Not a file: {self}")
@@ -202,7 +197,7 @@ class ZipPath(zipfile.Path):
                 )
             )
 
-            return None
+            return
 
         try:
             md5_str, sha1_str = self._hash(dir_progress_str, total_progress, eta)
@@ -210,9 +205,11 @@ class ZipPath(zipfile.Path):
             # `RuntimeError` for encrypted files
             total_progress.current += self.size
             eta.left -= self.size
-            return None
+            return
 
-        return FileStat(str(self), self.size, self.mtime, md5_str, sha1_str)
+        new_file_stats.append(
+            FileStat(str(self), self.size, self.mtime, md5_str, sha1_str)
+        )
 
     def _hash(
         self,
@@ -344,7 +341,8 @@ class RootZipPath(ZipPath):
         existing_file_stats: dict[str, FileStat],
         total_progress: Progress,
         eta: ETA,
-    ) -> list[FileStat]:
+        new_file_stats: list[FileStat],
+    ) -> None:
         """
         Inspect all the files in this directory and get relevant properties
 
@@ -355,18 +353,18 @@ class RootZipPath(ZipPath):
                 Total progress data
             eta (ETA):
                 ETA data
-
-        Returns:
-            (list[FileStat]): Properties of all files under this folder
+            new_file_stats (list[FileStat]):
+                Properties of all files visitied
         """
         try:
             with self:
-                return super().process_dir(existing_file_stats, total_progress, eta)
+                super().process_dir(
+                    existing_file_stats, total_progress, eta, new_file_stats
+                )
         except FileNotFoundError:
             # The file may have been deleted since then
             total_progress.current += self.size
             eta.left -= self.size
-            return []
 
     def _make(self) -> zipfile.ZipFile:
         """

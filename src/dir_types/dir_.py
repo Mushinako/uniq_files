@@ -128,7 +128,8 @@ class DirPath(Path):
         existing_file_stats: dict[str, FileStat],
         total_progress: Progress,
         eta: ETA,
-    ) -> list[FileStat]:
+        new_file_stats: list[FileStat],
+    ) -> None:
         """
         Inspect all the files in this directory and get relevant properties
 
@@ -139,14 +140,11 @@ class DirPath(Path):
                 Total progress data
             eta (ETA):
                 ETA data
-
-        Returns:
-            (list[FileStat]): Properties of all files under this folder
+            new_file_stats (list[FileStat]):
+                Properties of all files visitied
         """
         if not self.is_dir():
             raise NotADirectoryError(f"Not a directory: {self}")
-
-        new_file_stats: list[FileStat] = []
 
         dir_progress = Progress(len(self._filtered_files))
 
@@ -154,19 +152,16 @@ class DirPath(Path):
             dir_progress.current += 1
             existing_file_stat = existing_file_stats.get(str(file))
             dir_progress_str = f"[{dir_progress.string}]"
-            new_file_stat = file.process_file(
-                existing_file_stat, dir_progress_str, total_progress, eta
+            file.process_file(
+                existing_file_stat,
+                dir_progress_str,
+                total_progress,
+                eta,
+                new_file_stats,
             )
-            if new_file_stat is not None:
-                new_file_stats.append(new_file_stat)
 
         for dir_ in self._filtered_dirs:
-            sub_new_file_stats = dir_.process_dir(
-                existing_file_stats, total_progress, eta
-            )
-            new_file_stats += sub_new_file_stats
-
-        return new_file_stats
+            dir_.process_dir(existing_file_stats, total_progress, eta, new_file_stats)
 
     def process_file(
         self,
@@ -174,7 +169,8 @@ class DirPath(Path):
         dir_progress_str: str,
         total_progress: Progress,
         eta: ETA,
-    ) -> Optional[FileStat]:
+        new_file_stats: list[FileStat],
+    ) -> None:
         """
         Inspect this file and get relevant properties
 
@@ -187,9 +183,8 @@ class DirPath(Path):
                 Total progress data
             eta (ETA):
                 ETA data
-
-        Returns:
-            (FileStat | None): Properties of this file, if can be inferred
+            new_file_stats (list[FileStat]):
+                Properties of all files visitied
         """
         if not self.is_file():
             raise NotAFileError(f"Not a file: {self}")
@@ -205,16 +200,18 @@ class DirPath(Path):
                 )
             )
 
-            return None
+            return
 
         try:
             md5_str, sha1_str = self._hash(dir_progress_str, total_progress, eta)
         except (PermissionError, FileNotFoundError):
             total_progress.current += self.size
             eta.left -= self.size
-            return None
+            return
 
-        return FileStat(str(self), self.size, self.mtime, md5_str, sha1_str)
+        new_file_stats.append(
+            FileStat(str(self), self.size, self.mtime, md5_str, sha1_str)
+        )
 
     def _hash(
         self,
