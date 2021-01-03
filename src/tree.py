@@ -58,7 +58,7 @@ def walk_tree(
     try:
         root_dir.process_dir(leftover_file_stats, total_progress, eta, new_file_stats)
     except KeyboardInterrupt:
-        pass
+        clear_print("KeyboardInterrupt detected; stopping...")
     new_file_stats.sort()
     clear_print(
         f"Found {root_dir.length} files, of which {len(new_file_stats)} are new"
