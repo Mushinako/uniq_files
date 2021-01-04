@@ -17,7 +17,7 @@ from __future__ import annotations
 from hashlib import md5 as md5_factory, sha1 as sha1_factory
 from math import ceil
 from time import time
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from .utils.error import NotAFileError
 from ..config import CHUNK_SIZE
