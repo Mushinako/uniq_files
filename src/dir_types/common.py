@@ -71,10 +71,9 @@ def process_dir(
 
     for file in self.filtered_files:
         dir_progress.current += 1
-        existing_file_stat = existing_file_stats.pop(str(file), None)
         dir_progress_str = f"[{dir_progress.string}]"
         file.process_file(
-            existing_file_stat,
+            existing_file_stats,
             dir_progress_str,
             total_progress,
             eta,
@@ -93,7 +92,7 @@ def process_file_factory(*errors: type[Exception]):
 
     def process_file(
         self: UnionBasePath,
-        existing_file_stat: Optional[FileStat],
+        existing_file_stats: dict[str, FileStat],
         dir_progress_str: str,
         total_progress: Progress,
         eta: ETA,
@@ -103,7 +102,7 @@ def process_file_factory(*errors: type[Exception]):
         Inspect this file and get relevant properties
 
         Args:
-            existing_file_stats (FileStat | None):
+            existing_file_stats (dict[str, FileStat]):
                 Existing path string-file property mapping
             dir_progress_str (str):
                 Directory progress data, formatted string
@@ -114,21 +113,28 @@ def process_file_factory(*errors: type[Exception]):
             new_file_stats (list[FileStat]):
                 Properties of all files visitied
         """
+        self_str = str(self)
+
         if not self.is_file():
-            raise NotAFileError(f"Not a file: {self}")
+            raise NotAFileError(f"Not a file: {self_str}")
 
-        if existing_file_stat is not None and existing_file_stat.mtime == self.mtime:
-            total_progress.current += self.size
-            eta.left -= self.size
+        if self_str in existing_file_stats:
+            existing_file_stat = existing_file_stats[self_str]
 
-            clear_print_clearable(
-                shrink_str(
-                    str(self),
-                    prefix=f"{total_progress.percent} {eta.string} {dir_progress_str}",
+            if existing_file_stat.mtime == self.mtime:
+                del existing_file_stats[self_str]
+
+                total_progress.current += self.size
+                eta.left -= self.size
+
+                clear_print_clearable(
+                    shrink_str(
+                        str(self),
+                        prefix=f"{total_progress.percent} {eta.string} {dir_progress_str}",
+                    )
                 )
-            )
 
-            return
+                return
 
         try:
             md5_str, sha1_str = self.hash(dir_progress_str, total_progress, eta)
