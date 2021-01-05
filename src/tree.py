@@ -66,6 +66,7 @@ def walk_tree(
     except Exception:
         clear_print("\nException occurred!")
         print_exc()
+        print()
         leftover_file_stats = {}
 
     new_file_stats.sort()
