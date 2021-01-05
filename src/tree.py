@@ -8,6 +8,7 @@ Public Functions:
 
 from collections import defaultdict
 from pathlib import Path
+from traceback import print_exc
 
 from .data.duplication import Duplication
 from .data.file_stat import FileStat, IdStat
@@ -55,12 +56,19 @@ def walk_tree(
     eta = ETA(root_dir.size)
     leftover_file_stats = existing_file_stats.copy()
     new_file_stats: list[FileStat] = []
+
     try:
         root_dir.process_dir(leftover_file_stats, total_progress, eta, new_file_stats)
     except KeyboardInterrupt:
         clear_print("KeyboardInterrupt detected; stopping...")
         # Don't remove anything from the database if the procedure is interrupted
         leftover_file_stats = {}
+    except Exception:
+        clear_print("\nException occurred!")
+        print_exc()
+        print()
+        leftover_file_stats = {}
+
     new_file_stats.sort()
     clear_print(
         f"Found {root_dir.length} files, of which {len(new_file_stats)} are new"
