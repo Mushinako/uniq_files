@@ -1,0 +1,1 @@
+progbar-mushinako @ git+https://github.com/Mushinako/progbar.git

@@ -10,7 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterator
 
-from ..utils.print_ import clear_print
+from progbar import clear_print
 
 
 class Txt:

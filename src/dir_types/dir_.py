@@ -11,11 +11,12 @@ import os
 from pathlib import Path, WindowsPath, PosixPath
 from typing import TYPE_CHECKING
 
+from progbar import clear_print_clearable, shrink_str
+
 from .common import dir_get_stats, hash, process_dir, process_file_factory
 from .utils.check_whitelist import check_dir, check_file
 from .utils.error import InvalidDirectoryType
 from .utils.map_ import DIRECTORY_EXT
-from ..utils.print_ import clear_print_clearable, shrink_str
 
 if TYPE_CHECKING:
     from .utils.type_ import UnionRootPath
