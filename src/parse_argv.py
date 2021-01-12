@@ -10,8 +10,8 @@ Public Constants:
 
 from __future__ import annotations
 
-from pathlib import Path
 from argparse import ArgumentParser, Namespace
+from pathlib import Path
 from typing import Optional
 
 from .storage.db import Db
