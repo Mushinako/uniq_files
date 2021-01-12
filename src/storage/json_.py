@@ -11,8 +11,9 @@ Public Functions:
 from json import dump as json_dump
 from pathlib import Path
 
+from progbar import clear_print
+
 from ..data.duplication import Duplication
-from ..utils.print_ import clear_print
 
 
 class Json:

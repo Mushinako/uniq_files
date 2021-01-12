@@ -10,7 +10,7 @@ Public Classes:
 from dataclasses import dataclass
 from time import time
 
-from .print_ import progress_percent, progress_str
+from progbar import progress_percent, progress_str
 
 
 @dataclass

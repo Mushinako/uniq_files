@@ -7,18 +7,19 @@ Public Classes:
 """
 
 from __future__ import annotations
-from typing import Iterator, Optional
 
 import zipfile
 from datetime import datetime
 from pathlib import Path
 from posixpath import dirname
+from typing import Iterator, Optional
+
+from progbar import clear_print_clearable, shrink_str
 
 from .common import dir_get_stats, hash, process_dir, process_file_factory
 from .utils.check_whitelist import check_dir, check_file
 from .utils.error import InvalidDirectoryType
 from ..data.file_stat import FileStat
-from ..utils.print_ import clear_print_clearable, shrink_str
 from ..utils.progress import ETA, Progress
 
 

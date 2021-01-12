@@ -10,8 +10,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Generator
 
+from progbar import clear_print
+
 from ..data.file_stat import FileStat, DatabaseRow
-from ..utils.print_ import clear_print
 
 
 class Db:

@@ -10,11 +10,12 @@ from collections import defaultdict
 from pathlib import Path
 from traceback import print_exc
 
+from progbar import clear_print
+
 from .data.duplication import Duplication
 from .data.file_stat import FileStat, IdStat
 from .dir_types.dir_ import DirPath
 from .utils.byte import byte_shorten
-from .utils.print_ import clear_print
 from .utils.progress import ETA, Progress
 
 
