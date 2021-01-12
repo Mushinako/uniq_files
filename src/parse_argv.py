@@ -155,9 +155,7 @@ def _prepare_argv(args: _Args) -> None:
         args (_Args): Parsed command-line args
     """
     if not args.dir_path.is_dir():
-        raise NotADirectoryError(
-            f"`dir_path` exists but is not a directory: {args.dir_path}"
-        )
+        raise NotADirectoryError(f"`dir_path` is not a directory: {args.dir_path}")
 
     if args.db.path.exists() and not args.db.path.is_file():
         raise FileExistsError(f"`db_path` exists but is not a file: {args.db.path}")
