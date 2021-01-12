@@ -19,10 +19,11 @@ from math import ceil
 from time import time
 from typing import TYPE_CHECKING
 
+from progbar import clear_print_clearable, shrink_str
+
 from .utils.error import NotAFileError
 from ..config import CHUNK_SIZE
 from ..data.file_stat import FileStat
-from ..utils.print_ import clear_print_clearable, shrink_str
 from ..utils.progress import ETA, Progress
 
 if TYPE_CHECKING:
