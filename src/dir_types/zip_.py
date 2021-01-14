@@ -16,14 +16,14 @@ from typing import Iterator, Optional
 
 from progbar import clear_print_clearable, shrink_str
 
-from .common import dir_get_stats, hash, process_dir, process_file_factory
+from .common import BasePath
 from .utils.check_whitelist import check_dir, check_file
 from .utils.error import InvalidDirectoryType
 from ..data.file_stat import FileStat
 from ..utils.progress import ETA, Progress
 
 
-class ZipPath(zipfile.Path):
+class ZipPath(zipfile.Path, BasePath):
     """
     Zip path
 
@@ -34,25 +34,17 @@ class ZipPath(zipfile.Path):
     Public Attributes:
         at (str):
             Relative path within the zip file
-        size (int):
-            Size of the file/directory
-        mtime (float):
-            Last modified time of the file. For directories, it's not used and
-            defaulted to current time
-        length (int):
-            Number of files under this directory, or 1 if the path is a file
         root (readonly zipfile.ZipFile | None):
             Actual zip file object
 
     Public Methods:
-        process_dir:
-            Inspect all the files in this directory and get relevant properties
-        process_file:
-            Inspect this file and get relevant properties
         iterdir:
             Emulates `zipfile.Path.iterdir`, slightly changed to avoid circular
             function calls
     """
+
+    # `RuntimeError` is raised when the file is encrypted
+    _ignored_file_errors = (PermissionError, RuntimeError)
 
     def __init__(self, parent: RootZipPath, at: str) -> None:
         self._parent = parent
@@ -96,7 +88,7 @@ class ZipPath(zipfile.Path):
         Get file stats and store them in `self.size` and `self.mtime`
         """
         if self.is_dir():
-            dir_get_stats(self)
+            self.dir_get_stats()
         else:
             if self.root is None:
                 raise ValueError("Can't iterdir a closed zip file")
@@ -112,13 +104,6 @@ class ZipPath(zipfile.Path):
             )
             self.mtime = datetime(*date_time).timestamp()
             self.length = 1
-
-    process_dir = process_dir
-
-    # `RuntimeError` is raised when the file is encrypted
-    process_file = process_file_factory(PermissionError, RuntimeError)
-
-    hash = hash
 
     def iterdir(self) -> Iterator[ZipPath]:
         """
@@ -200,24 +185,15 @@ class RootZipPath(ZipPath):
         total_progress: Progress,
         eta: ETA,
         new_file_stats: list[FileStat],
+        empty_dirs: list[str],
     ) -> None:
         """
         Inspect all the files in this directory and get relevant properties
-
-        Args:
-            existing_file_stats (dict[str, FileStat]):
-                Existing path string-file property mapping
-            total_progress (Progress):
-                Total progress data
-            eta (ETA):
-                ETA data
-            new_file_stats (list[FileStat]):
-                Properties of all files visitied
         """
         try:
             with self:
                 super().process_dir(
-                    existing_file_stats, total_progress, eta, new_file_stats
+                    existing_file_stats, total_progress, eta, new_file_stats, empty_dirs
                 )
         except FileNotFoundError:
             # The file may have been deleted since then

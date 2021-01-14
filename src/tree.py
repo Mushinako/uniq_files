@@ -37,7 +37,7 @@ def make_tree(base_path: Path) -> DirPath:
 
 def walk_tree(
     root_dir: DirPath, existing_file_stats: dict[str, FileStat]
-) -> tuple[list[Duplication], list[FileStat], list[str]]:
+) -> tuple[list[Duplication], list[FileStat], list[str], list[str]]:
     """
     Get duplication data
 
@@ -51,15 +51,19 @@ def walk_tree(
         (list[Duplication]): All duplications
         (list[FileStat])   : All file properties
         (list[str])        : Records to be removed from the database
+        (list[str])        : List of empty directory paths
     """
     clear_print("Getting all file data...")
     total_progress = Progress(root_dir.size)
     eta = ETA(root_dir.size)
     leftover_file_stats = existing_file_stats.copy()
     new_file_stats: list[FileStat] = []
+    empty_dirs: list[str] = []
 
     try:
-        root_dir.process_dir(leftover_file_stats, total_progress, eta, new_file_stats)
+        root_dir.process_dir(
+            leftover_file_stats, total_progress, eta, new_file_stats, empty_dirs
+        )
     except KeyboardInterrupt:
         clear_print("KeyboardInterrupt detected; stopping...")
         # Don't remove anything from the database if the procedure is interrupted
@@ -95,4 +99,10 @@ def walk_tree(
     duplications.sort()
 
     clear_print(f"Found {len(duplications)} groups of duplicates")
-    return duplications, new_file_stats, sorted(leftover_file_stats)
+
+    return (
+        duplications,
+        new_file_stats,
+        sorted(leftover_file_stats),
+        sorted(empty_dirs, key=str),
+    )

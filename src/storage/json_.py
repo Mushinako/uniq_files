@@ -5,14 +5,16 @@ Public Classes:
     Json: JSON output
 
 Public Functions:
-    split_duplication_data: Split duplications into large- and small-file lists
+    write_jsons: Write JSON data into corresponding files
 """
 
 from json import dump as json_dump
 from pathlib import Path
+from typing import Optional
 
 from progbar import clear_print
 
+from ..config import SMALL_SIZE, LARGE_SIZE
 from ..data.duplication import Duplication
 
 
@@ -33,54 +35,89 @@ class Json:
     def __init__(self, path: Path) -> None:
         self.path = path
 
-    def write(self, duplications: list[Duplication], duplication_name: str) -> None:
+    def write(self, data: list[Duplication], indicator: str) -> None:
         """
         Write duplication data to JSON file
 
         Args:
-            duplications     (list[Duplication]): Duplication data to be written
-            duplication_name (str)              : Duplication name. For printing only
+            data      (list[Duplication]): Duplication data to be written
+            indicator (str)              : Duplication name. For printing only
         """
-        clear_print(f"Writing {duplication_name} JSON to {self.path}...")
+        clear_print(f"Writing {indicator} JSON to {self.path}...")
 
         with self.path.open("w") as fp:
             json_dump(
-                [duplication.to_json_dict() for duplication in duplications],
+                [duplication.to_json_dict() for duplication in data],
                 fp,
                 indent=2,
             )
 
 
-def split_duplication_data(
-    duplications: list[Duplication], small_size: int
-) -> tuple[list[Duplication], list[Duplication]]:
+def write_json(
+    duplications: list[Duplication],
+    dup_json: Json,
+    *,
+    small_json: Optional[Json] = None,
+    large_json: Optional[Json] = None,
+    small_size: int = SMALL_SIZE,
+    large_size: int = LARGE_SIZE,
+) -> None:
     """
-    Split duplications into large- and small-file lists, where large-file list
-        contains all the duplications with file sizes strictly larger than
-        `small_size`, and small-file list containing the rest
+    Write JSON data into corresponding files
 
     Args:
         duplicatins (list[Duplication]):
             All duplications
+        dup_json (Json):
+            Base JSON writer
+        *
+        small_json (Json):
+            Small JSON writer
+        large_json (Json):
+            Large JSON writer
         small_size (int):
-            Threshold beyond which a file is considered large
-
-    Returns:
-        (list[Duplication]): Large duplication lists
-        (list[Duplication]): Small duplication lists
+            Maximum file size to qualify as a small file
+        large_size (int):
+            Minimum file size to qualify as a large file
     """
-    duplication_iter = iter(sorted(duplications))
+    duplications.sort()
 
-    large_duplications: list[Duplication] = []
-    small_duplications: list[Duplication] = []
+    if small_json is None and large_json is None:
+        dup_json.write(duplications, "duplications")
+        return
 
-    for duplication in duplication_iter:
-        if duplication.size > small_size:
-            large_duplications.append(duplication)
-            break
-        else:
-            small_duplications.append(duplication)
+    duplication_iter = iter(duplications)
 
-    large_duplications += list(duplication_iter)
+    if small_json is not None:
+        small_duplications: list[Duplication] = []
+        not_small_duplications: list[Duplication] = []
 
-    return large_duplications, small_duplications
+        for duplication in duplication_iter:
+            if duplication.size > small_size:
+                not_small_duplications.append(duplication)
+                break
+            else:
+                small_duplications.append(duplication)
+
+        small_json.write(small_duplications, "small duplications")
+
+        duplication_iter = iter(not_small_duplications + list(duplication_iter))
+
+    if large_json is not None:
+        large_duplications: list[Duplication] = []
+        not_large_duplications: list[Duplication] = []
+
+        for duplication in duplication_iter:
+            if duplication.size > large_size:
+                large_duplications.append(duplication)
+                break
+            else:
+                not_large_duplications.append(duplication)
+
+        large_json.write(
+            large_duplications + list(duplication_iter), "large duplications"
+        )
+
+        duplication_iter = iter(not_large_duplications)
+
+    dup_json.write(list(duplication_iter), "duplications left")

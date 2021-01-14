@@ -8,7 +8,7 @@ Public Classes:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterator
+from typing import Iterable
 
 from progbar import clear_print
 
@@ -30,14 +30,14 @@ class Txt:
     def __init__(self, path: Path) -> None:
         self.path = path
 
-    def write(self, data: Iterator[str]) -> None:
+    def write(self, data: Iterable[str], indicator: str) -> None:
         """
-        Write new file data to text file
+        Write data to text file
 
         Args:
-            data (Iterator[str]): List of new file pathss
+            data (Iterator[str]): Collection of file paths
         """
-        clear_print(f"Writing new file paths to {self.path}")
+        clear_print(f"Writing {indicator} to {self.path}")
 
         with self.path.open("w") as fp:
             for new in data:

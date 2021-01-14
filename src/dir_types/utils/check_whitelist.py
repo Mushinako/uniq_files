@@ -8,15 +8,11 @@ Public Functions:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+from ..common import BasePath
 from ...config import WHITELIST
 
-if TYPE_CHECKING:
-    from .type_ import UnionBasePath
 
-
-def check_dir(path: UnionBasePath) -> bool:
+def check_dir(path: BasePath) -> bool:
     """
     Check if a directory is in the whitelist
 
@@ -29,7 +25,7 @@ def check_dir(path: UnionBasePath) -> bool:
     return path.name not in WHITELIST.dirnames and str(path) not in WHITELIST.dirpaths
 
 
-def check_file(path: UnionBasePath) -> bool:
+def check_file(path: BasePath) -> bool:
     """
     Check if a file is in the whitelist
 

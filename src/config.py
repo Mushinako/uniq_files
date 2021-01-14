@@ -4,10 +4,12 @@ Module: Configurations
 Public Constants:
     WHITELIST  (_Whitelist): All the whitelists
     CHUNK_SIZE (int)       : File read chunk size
+    SMALL_SIZE (int)       : Maximum file size to qualify as a small file
+    LARGE_SIZE (int)       : Minimum file size to qualify as a large file
 """
+
 import re
 from dataclasses import dataclass
-
 
 # Config to be edited
 _WHITELIST_DIRNAMES: list[str] = [
@@ -49,3 +51,6 @@ WHITELIST = _Whitelist(
 )
 
 CHUNK_SIZE = 1 << 26  # 64 MiB
+
+SMALL_SIZE = 1 << 10  # 1 KiB
+LARGE_SIZE = 1 << 28 + 1  # 256 MiB + 1 byte
