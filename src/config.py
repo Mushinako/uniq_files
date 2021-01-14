@@ -53,4 +53,4 @@ WHITELIST = _Whitelist(
 CHUNK_SIZE = 1 << 26  # 64 MiB
 
 SMALL_SIZE = 1 << 10  # 1 KiB
-LARGE_SIZE = 1 << 28 + 1  # 256 MiB + 1 byte
+LARGE_SIZE = (1 << 28) + 1  # 256 MiB + 1 byte
