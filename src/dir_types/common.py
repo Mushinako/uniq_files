@@ -167,7 +167,7 @@ class BasePath(metaclass=ABCMeta):
                 return
 
         try:
-            md5_str, sha1_str = self._hash(dir_progress_str, total_progress, eta)
+            md5_str, sha1_str = self._hashes(dir_progress_str, total_progress, eta)
         except self._ignored_file_errors:
             total_progress.current += self.size
             eta.left -= self.size
@@ -177,7 +177,7 @@ class BasePath(metaclass=ABCMeta):
             FileStat(str(self), self.size, self.mtime, md5_str, sha1_str)
         )
 
-    def _hash(
+    def _hashes(
         self, dir_progress_str: str, total_progress: Progress, eta: ETA
     ) -> tuple[str, str]:
         """
