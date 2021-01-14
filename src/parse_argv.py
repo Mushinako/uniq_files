@@ -25,7 +25,7 @@ def parse_argv() -> _Args:
     Returns:
         (_Args): Namespace object for all arguments
     """
-    parser = ArgumentParser(description="Check file duplicates under some base path")
+    parser = ArgumentParser(description="check file duplicates under some base path")
 
     input_group = parser.add_argument_group("inputs")
     input_group.add_argument(
@@ -37,8 +37,8 @@ def parse_argv() -> _Args:
         dest="dir_path",
     )
 
-    output_group = parser.add_argument_group("outputs")
-    output_group.add_argument(
+    non_json_output_group = parser.add_argument_group("outputs")
+    non_json_output_group.add_argument(
         "-d",
         "--db-path",
         type=_db,
@@ -46,14 +46,14 @@ def parse_argv() -> _Args:
         help="file database path",
         dest="db",
     )
-    output_group.add_argument(
+    non_json_output_group.add_argument(
         "-t",
         "--new-txt-path",
         type=_txt,
         help="new files list text path (Optional)",
         dest="new_txt",
     )
-    output_group.add_argument(
+    non_json_output_group.add_argument(
         "-e",
         "--empty-txt-path",
         type=_txt,
@@ -61,7 +61,7 @@ def parse_argv() -> _Args:
         dest="empty_txt",
     )
 
-    json_output_group = output_group.add_argument_group("JSON outputs")
+    json_output_group = parser.add_argument_group("JSON outputs")
     json_output_group.add_argument(
         "-j",
         "--dup-json-path",
