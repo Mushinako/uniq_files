@@ -16,9 +16,9 @@ inputs:
 
 outputs:
   -d DB, --db-path DB   file database path
-  -t NEW_TXT, --new-txt-path NEW_TXT
+  -tn NEW_TXT, --new-txt-path NEW_TXT
                         new files list text path (Optional)
-  -e EMPTY_TXT, --empty-txt-path EMPTY_TXT
+  -te EMPTY_TXT, --empty-txt-path EMPTY_TXT
                         empty directories list text path (Optional)
 
 JSON outputs:
@@ -30,8 +30,8 @@ JSON outputs:
                         large file duplication JSON path (Optional)
 
 configs:
-  -s SMALL_SIZE, --small-size SMALL_SIZE
+  -ss SMALL_SIZE, --small-size SMALL_SIZE
                         maximum file size to qualify as a small file (Default: 1,024 bytes)
-  -l LARGE_SIZE, --large-size LARGE_SIZE
+  -sl LARGE_SIZE, --large-size LARGE_SIZE
                         minimum file size to qualify as a large file (Default: 536,870,912 bytes)
 ```

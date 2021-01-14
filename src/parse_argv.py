@@ -47,14 +47,14 @@ def parse_argv() -> _Args:
         dest="db",
     )
     non_json_output_group.add_argument(
-        "-t",
+        "-tn",
         "--new-txt-path",
         type=_txt,
         help="new files list text path (Optional)",
         dest="new_txt",
     )
     non_json_output_group.add_argument(
-        "-e",
+        "-te",
         "--empty-txt-path",
         type=_txt,
         help="empty directories list text path (Optional)",
@@ -87,7 +87,7 @@ def parse_argv() -> _Args:
 
     config_group = parser.add_argument_group("configs")
     config_group.add_argument(
-        "-s",
+        "-ss",
         "--small-size",
         default=SMALL_SIZE,
         type=int,
@@ -95,7 +95,7 @@ def parse_argv() -> _Args:
         dest="small_size",
     )
     config_group.add_argument(
-        "-l",
+        "-sl",
         "--large-size",
         default=LARGE_SIZE,
         type=int,
