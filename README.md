@@ -3,7 +3,7 @@
 Get the duplicate files under a base path, recursively.
 
 ```text
-usage: uniq_files.py [-h] -f DIR_PATH -d DB [-t NEW_TXT] [-e EMPTY_TXT] -j DUP_JSON [-js SMALL_JSON] [-jl LARGE_JSON] [-s SMALL_SIZE] [-l LARGE_SIZE]
+usage: uniq_files.py [-h] [-d DB] [-tn NEW_TXT] [-te EMPTY_TXT] -j DUP_JSON [-js SMALL_JSON] [-jl LARGE_JSON] [-ss SMALL_SIZE] [-sl LARGE_SIZE] dir-path
 
 check file duplicates under some base path
 
@@ -11,8 +11,7 @@ optional arguments:
   -h, --help            show this help message and exit
 
 inputs:
-  -f DIR_PATH, --dir-path DIR_PATH
-                        base directory path
+  dir-path              base directory path
 
 outputs:
   -d DB, --db-path DB   file database path
@@ -33,5 +32,5 @@ configs:
   -ss SMALL_SIZE, --small-size SMALL_SIZE
                         maximum file size to qualify as a small file (Default: 1,024 bytes)
   -sl LARGE_SIZE, --large-size LARGE_SIZE
-                        minimum file size to qualify as a large file (Default: 536,870,912 bytes)
+                        minimum file size to qualify as a large file (Default: 268,435,457 bytes)
 ```

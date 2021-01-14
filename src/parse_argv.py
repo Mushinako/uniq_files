@@ -29,10 +29,10 @@ def parse_argv() -> _Args:
 
     input_group = parser.add_argument_group("inputs")
     input_group.add_argument(
-        "dir-path",
+        "dir_path",
         type=_full_path,
         help="base directory path",
-        dest="dir_path",
+        metavar="dir-path",
     )
 
     non_json_output_group = parser.add_argument_group("outputs")
