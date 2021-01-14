@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.9
 
+from src.data.file_stat import FileStat
 from src.parse_argv import parse_argv
 from src.storage.json_ import write_json
 from src.tree import make_tree, walk_tree
@@ -12,7 +13,7 @@ def main():
     # Parse command-line arguments
     args = parse_argv()
     # Read DB
-    db_data = args.db.read()
+    db_data: dict[str, FileStat] = {} if args.db is None else args.db.read()
 
     # Get total size estimate, and make tree
     root_dir = make_tree(args.dir_path)
@@ -25,7 +26,8 @@ def main():
     ) = walk_tree(root_dir, db_data)
 
     # Write all file data
-    args.db.write(new_file_stats, removed_path_strs)
+    if args.db is not None:
+        args.db.write(new_file_stats, removed_path_strs)
     # Write new file paths
     if args.new_txt is not None:
         args.new_txt.write(

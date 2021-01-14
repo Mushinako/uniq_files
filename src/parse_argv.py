@@ -29,10 +29,8 @@ def parse_argv() -> _Args:
 
     input_group = parser.add_argument_group("inputs")
     input_group.add_argument(
-        "-f",
-        "--dir-path",
+        "dir-path",
         type=_full_path,
-        required=True,
         help="base directory path",
         dest="dir_path",
     )
@@ -42,7 +40,6 @@ def parse_argv() -> _Args:
         "-d",
         "--db-path",
         type=_db,
-        required=True,
         help="file database path",
         dest="db",
     )
@@ -115,7 +112,7 @@ class _Args(Namespace):
     """
 
     dir_path: Path
-    db: Db
+    db: Optional[Db]
     new_txt: Optional[Txt]
     empty_txt: Optional[Txt]
     dup_json: Json
@@ -130,7 +127,8 @@ class _Args(Namespace):
         """
         self._check_input_dir(self.dir_path)
 
-        self._prepare_output_file(self.db.path)
+        if self.db is not None:
+            self._prepare_output_file(self.db.path)
 
         if self.new_txt is not None:
             self._prepare_output_file(self.new_txt.path)
