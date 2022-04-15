@@ -6,6 +6,8 @@ Public Functions:
     walk_tree: Get duplication data
 """
 
+from __future__ import annotations
+
 from collections import defaultdict
 from traceback import print_exc
 from typing import TYPE_CHECKING
