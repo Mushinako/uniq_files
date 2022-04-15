@@ -11,14 +11,17 @@ from abc import ABCMeta, abstractmethod
 from hashlib import md5 as md5_factory, sha1 as sha1_factory
 from math import ceil
 from time import time
-from typing import IO, Iterator, Literal, Optional
+from typing import TYPE_CHECKING
 
 from progbar import clear_print_clearable, shrink_str
 
+from src.config import CHUNK_SIZE
+from src.data.file_stat import FileStat
+from src.utils.progress import ETA, Progress
 from .utils.error import NotAFileError
-from ..config import CHUNK_SIZE
-from ..data.file_stat import FileStat
-from ..utils.progress import ETA, Progress
+
+if TYPE_CHECKING:
+    from typing import Any, IO, Iterator
 
 
 class BasePath(metaclass=ABCMeta):
@@ -45,7 +48,6 @@ class BasePath(metaclass=ABCMeta):
             Inspect this file and get relevant properties
     """
 
-    name: str
     size: int
     mtime: float
     length: int
@@ -70,7 +72,7 @@ class BasePath(metaclass=ABCMeta):
         self.mtime = time()
         dir_length_total = sum(path.length for path in self.filtered_dirs)
         self.length = dir_length_total + len(self.filtered_files)
-        self.is_empty = not len(list(self.iterdir()))
+        self.is_empty = not len(list(self.iter()))
 
     def process_dir(
         self,
@@ -99,7 +101,7 @@ class BasePath(metaclass=ABCMeta):
             empty_dirs.append(str(self))
             return
 
-        if not self.is_dir():
+        if not self.is_dir_():
             raise NotADirectoryError(f"Not a directory: {self}")
 
         dir_progress = Progress(len(self.filtered_files))
@@ -145,7 +147,7 @@ class BasePath(metaclass=ABCMeta):
         """
         self_str = str(self)
 
-        if not self.is_file():
+        if not self.is_file_():
             raise NotAFileError(f"Not a file: {self_str}")
 
         if self_str in existing_file_stats:
@@ -160,7 +162,9 @@ class BasePath(metaclass=ABCMeta):
                 clear_print_clearable(
                     shrink_str(
                         str(self),
-                        prefix=f"{total_progress.percent} {eta.string} {dir_progress_str}",
+                        prefix=(
+                            f"{total_progress.percent} {eta.string} {dir_progress_str}"
+                        ),
                     )
                 )
 
@@ -198,7 +202,7 @@ class BasePath(metaclass=ABCMeta):
         num_chunks = ceil(self.size / CHUNK_SIZE)
         chunk_progress = Progress(num_chunks)
 
-        with self.open("rb") as fp:
+        with self.open_file() as fp:
             for _ in range(num_chunks):
                 start = time()
 
@@ -226,24 +230,17 @@ class BasePath(metaclass=ABCMeta):
         return md5.hexdigest(), sha1.hexdigest()
 
     @abstractmethod
-    def iterdir(self) -> Iterator[BasePath]:
+    def iter(self) -> Iterator[Any]:
         raise NotImplementedError()
 
     @abstractmethod
-    def is_dir(self) -> bool:
+    def is_dir_(self) -> bool:
         raise NotImplementedError()
 
     @abstractmethod
-    def is_file(self) -> bool:
+    def is_file_(self) -> bool:
         raise NotImplementedError()
 
     @abstractmethod
-    def open(
-        self,
-        mode: Literal["rb"] = ...,
-        buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
-    ) -> IO[bytes]:
+    def open_file(self) -> IO[bytes]:
         raise NotImplementedError()

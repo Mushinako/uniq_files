@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path, WindowsPath, PosixPath
-from typing import Union
+from typing import TYPE_CHECKING
 
 from progbar import clear_print_clearable, shrink_str
 
@@ -17,10 +17,12 @@ from .common import BasePath
 from .utils.check_whitelist import check_dir, check_file
 from .utils.error import InvalidDirectoryType
 from .utils.map_ import DIRECTORY_EXT
-from .zip_ import RootZipPath
+
+if TYPE_CHECKING:
+    from typing import IO, Iterator
 
 
-class DirPath(Path, BasePath):
+class DirPath(BasePath, Path):
     """
     Regular path (Directory)
 
@@ -47,8 +49,8 @@ class DirPath(Path, BasePath):
          - Get file stats
         """
         clear_print_clearable(shrink_str(str(self)))
-        self.filtered_dirs: list[_UnionRootPath] = []
-        self.filtered_files: list[DirPath] = []
+        self.filtered_dirs = []
+        self.filtered_files = []
         self._filter_paths()
         self._get_stats()
 
@@ -98,8 +100,17 @@ class DirPath(Path, BasePath):
             self.length = 1
             self.is_empty = False
 
+    def iter(self) -> Iterator[Path]:
+        return self.iterdir()
 
-_UnionRootPath = Union[DirPath, RootZipPath]
+    def is_dir_(self) -> bool:
+        return self.is_dir()
+
+    def is_file_(self) -> bool:
+        return self.is_file()
+
+    def open_file(self) -> IO[bytes]:
+        return self.open("rb")
 
 
 class _WindowsDirPath(DirPath, WindowsPath):

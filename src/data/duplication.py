@@ -43,10 +43,7 @@ class Duplication:
         return {
             "properties": {
                 "size": self.size,
-                "hashes": {
-                    "md5": self.md5,
-                    "sha1": self.sha1,
-                },
+                "hashes": {"md5": self.md5, "sha1": self.sha1},
             },
             "paths": self.paths,
         }

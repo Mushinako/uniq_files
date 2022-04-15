@@ -8,9 +8,12 @@ Public Classes:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable
+from typing import TYPE_CHECKING
 
 from progbar import clear_print
+
+if TYPE_CHECKING:
+    from typing import Iterable
 
 
 class Txt:

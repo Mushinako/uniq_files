@@ -7,7 +7,7 @@ Public Constants:
 
 from __future__ import annotations
 
-from ..zip_ import RootZipPath
+from src.dir_types.zip_ import RootZipPath
 
 _UnionRootPathTypeNoDir = type[RootZipPath]
 

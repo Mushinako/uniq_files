@@ -8,11 +8,14 @@ Public Classes:
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator
+from typing import TYPE_CHECKING
 
 from progbar import clear_print
 
-from ..data.file_stat import FileStat, DatabaseRow
+from src.data.file_stat import FileStat, DatabaseRow
+
+if TYPE_CHECKING:
+    from typing import Generator
 
 
 class Db:

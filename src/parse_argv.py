@@ -9,12 +9,11 @@ from __future__ import annotations
 
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Optional
 
 from .config import SMALL_SIZE, LARGE_SIZE
 from .dir_types.utils.error import NotAFileError
 from .storage.db import Db
-from .storage.json_ import Json
+from .storage.yaml_ import Yaml
 from .storage.txt import Txt
 
 
@@ -35,51 +34,51 @@ def parse_argv() -> _Args:
         metavar="dir-path",
     )
 
-    non_json_output_group = parser.add_argument_group("outputs")
-    non_json_output_group.add_argument(
+    data_output_group = parser.add_argument_group("outputs")
+    data_output_group.add_argument(
         "-d",
         "--db-path",
         type=_db,
         help="file database path",
         dest="db",
     )
-    non_json_output_group.add_argument(
+    data_output_group.add_argument(
         "-tn",
         "--new-txt-path",
         type=_txt,
-        help="new files list text path (Optional)",
+        help="new files list text path (optional)",
         dest="new_txt",
     )
-    non_json_output_group.add_argument(
+    data_output_group.add_argument(
         "-te",
         "--empty-txt-path",
         type=_txt,
-        help="empty directories list text path (Optional)",
+        help="empty directories list text path (optional)",
         dest="empty_txt",
     )
 
-    json_output_group = parser.add_argument_group("JSON outputs")
-    json_output_group.add_argument(
-        "-j",
-        "--dup-json-path",
-        type=_json,
+    dup_output_group = parser.add_argument_group("duplication outputs")
+    dup_output_group.add_argument(
+        "-o",
+        "--dup-yaml",
+        type=_yml,
         required=True,
-        help="duplication JSON path",
-        dest="dup_json",
+        help="duplication YAML path",
+        dest="dup_yaml",
     )
-    json_output_group.add_argument(
-        "-js",
-        "--small-json-path",
-        type=_json,
-        help="small file duplication JSON path (Optional)",
-        dest="small_json",
+    dup_output_group.add_argument(
+        "-os",
+        "--small-yaml",
+        type=_yml,
+        help="small file duplication YAML path (optional)",
+        dest="small_yaml",
     )
-    json_output_group.add_argument(
-        "-jl",
-        "--large-json-path",
-        type=_json,
-        help="large file duplication JSON path (Optional)",
-        dest="large_json",
+    dup_output_group.add_argument(
+        "-ol",
+        "--large-yaml",
+        type=_yml,
+        help="large file duplication YAML path (optional)",
+        dest="large_yaml",
     )
 
     config_group = parser.add_argument_group("configs")
@@ -88,7 +87,7 @@ def parse_argv() -> _Args:
         "--small-size",
         default=SMALL_SIZE,
         type=int,
-        help=f"maximum file size to qualify as a small file (Default: {SMALL_SIZE:,} bytes)",
+        help=f"maximum file size for small files (Default: {SMALL_SIZE:,} bytes)",
         dest="small_size",
     )
     config_group.add_argument(
@@ -96,7 +95,7 @@ def parse_argv() -> _Args:
         "--large-size",
         default=LARGE_SIZE,
         type=int,
-        help=f"minimum file size to qualify as a large file (Default: {LARGE_SIZE:,} bytes)",
+        help=f"minimum file size for large files (Default: {LARGE_SIZE:,} bytes)",
         dest="large_size",
     )
 
@@ -112,12 +111,12 @@ class _Args(Namespace):
     """
 
     dir_path: Path
-    db: Optional[Db]
-    new_txt: Optional[Txt]
-    empty_txt: Optional[Txt]
-    dup_json: Json
-    small_json: Optional[Json]
-    large_json: Optional[Json]
+    db: None | Db
+    new_txt: None | Txt
+    empty_txt: None | Txt
+    dup_yaml: Yaml
+    small_yaml: None | Yaml
+    large_yaml: None | Yaml
     small_size: int
     large_size: int
 
@@ -135,11 +134,11 @@ class _Args(Namespace):
         if self.empty_txt is not None:
             self._prepare_output_file(self.empty_txt.path)
 
-        self._prepare_output_file(self.dup_json.path)
-        if self.small_json is not None:
-            self._prepare_output_file(self.small_json.path)
-        if self.large_json is not None:
-            self._prepare_output_file(self.large_json.path)
+        self._prepare_output_file(self.dup_yaml.path)
+        if self.small_yaml is not None:
+            self._prepare_output_file(self.small_yaml.path)
+        if self.large_yaml is not None:
+            self._prepare_output_file(self.large_yaml.path)
 
     @staticmethod
     def _check_input_dir(dir_path: Path) -> None:
@@ -192,17 +191,17 @@ def _db(arg: str) -> Db:
     return Db(Path(arg).resolve())
 
 
-def _json(arg: str) -> Json:
+def _yml(arg: str) -> Yaml:
     """
-    Helper function for resolving a database path to JSON output object
+    Helper function for resolving a database path to YAML output object
 
     Args:
         arg (str): Command-line argument
 
     Returns:
-        (Json): JSON output object
+        (Yaml): YAML output object
     """
-    return Json(Path(arg).resolve())
+    return Yaml(Path(arg).resolve())
 
 
 def _txt(arg: str) -> Txt:

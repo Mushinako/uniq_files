@@ -23,8 +23,10 @@ class Progress:
         current (int): ID of current element
 
     Public Attributes:
-        total   (int)         : Total number of elements
-        current (int)         : ID of current element
+        total   (int): Total number of elements
+        current (int): ID of current element
+
+    Public Properties:
         string  (readonly str): String representation of progress
         percent (readonly str): Percent representation of progress
     """
@@ -52,10 +54,12 @@ class ETA:
         time_taken (float): Time taken for all processed elements
 
     Public Attributes:
-        left       (int)         : Number of elements left
-        processed  (int)         : ID of current element
-        time_taken (float)       : Time taken for all processed elements
-        string     (readonly str): String representation of ETA
+        left       (int)  : Number of elements left
+        processed  (int)  : ID of current element
+        time_taken (float): Time taken for all processed elements
+
+    Public Properties:
+        string (readonly str): String representation of ETA
     """
 
     left: int
@@ -73,7 +77,9 @@ class TotalTime:
     Total time taken by code
 
     Public Attributes:
-        start  (float)       : Unix timestamp when code started
+        start  (float): Unix timestamp when code started
+
+    Public Properties:
         string (readonly str): String representation of total time taken
     """
 
@@ -157,4 +163,4 @@ def _simple_plural(n: int, word: str) -> str:
     Returns:
         (str): Completed string
     """
-    return word if n == 1 else word + "s"
+    return word if n == 1 else f"{word}s"

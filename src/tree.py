@@ -90,13 +90,11 @@ def walk_tree(
     for file_stat in new_file_stats:
         potential_duplications[file_stat.to_id_stat()].append(file_stat.path)
 
-    duplications: list[Duplication] = []
-
-    for id_stat, file_path_strs in potential_duplications.items():
-        if len(file_path_strs) > 1:
-            duplications.append(Duplication(*id_stat, file_path_strs))
-
-    duplications.sort()
+    duplications = sorted(
+        Duplication(*id_stat, file_path_strs)
+        for id_stat, file_path_strs in potential_duplications.items()
+        if len(file_path_strs) > 1
+    )
 
     clear_print(f"Found {len(duplications)} groups of duplicates")
 

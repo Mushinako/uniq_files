@@ -8,8 +8,8 @@ Public Functions:
 
 from __future__ import annotations
 
-from ..common import BasePath
-from ...config import WHITELIST
+from src.config import WHITELIST
+from src.dir_types.common import BasePath
 
 
 def check_dir(path: BasePath) -> bool:

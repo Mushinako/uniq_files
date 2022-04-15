@@ -8,28 +8,27 @@ Public Functions:
     write_jsons: Write JSON data into corresponding files
 """
 
-from json import dump as json_dump
 from pathlib import Path
-from typing import Optional
 
 from progbar import clear_print
+from yaml import safe_dump
 
-from ..config import SMALL_SIZE, LARGE_SIZE
-from ..data.duplication import Duplication
+from src.config import SMALL_SIZE, LARGE_SIZE
+from src.data.duplication import Duplication
 
 
-class Json:
+class Yaml:
     """
-    JSON output
+    YAML output
 
     Args:
-        path (pathlib.Path): JSON file path
+        path (pathlib.Path): YAML file path
 
     Public Attributes:
-        path (pathlib.Path): JSON file path
+        path (pathlib.Path): YAML file path
 
     Public Methods:
-        write: Write duplication data to JSON file
+        write: Write duplication data to YAML file
     """
 
     def __init__(self, path: Path) -> None:
@@ -37,44 +36,40 @@ class Json:
 
     def write(self, data: list[Duplication], indicator: str) -> None:
         """
-        Write duplication data to JSON file
+        Write duplication data to YAML file
 
         Args:
             data      (list[Duplication]): Duplication data to be written
             indicator (str)              : Duplication name. For printing only
         """
-        clear_print(f"Writing {indicator} JSON to {self.path}...")
+        clear_print(f"Writing {indicator} YAML to {self.path}...")
 
         with self.path.open("w") as fp:
-            json_dump(
-                [duplication.to_json_dict() for duplication in data],
-                fp,
-                indent=2,
-            )
+            safe_dump([duplication.to_json_dict() for duplication in data], fp)
 
 
-def write_json(
+def write_dup(
     duplications: list[Duplication],
-    dup_json: Json,
+    dup_yaml: Yaml,
     *,
-    small_json: Optional[Json] = None,
-    large_json: Optional[Json] = None,
+    small_yaml: None | Yaml = None,
+    large_yaml: None | Yaml = None,
     small_size: int = SMALL_SIZE,
     large_size: int = LARGE_SIZE,
 ) -> None:
     """
-    Write JSON data into corresponding files
+    Write YAML data into corresponding files
 
     Args:
         duplicatins (list[Duplication]):
             All duplications
-        dup_json (Json):
-            Base JSON writer
+        dup_yaml (Yaml):
+            Base YAML writer
         *
-        small_json (Json):
-            Small JSON writer
-        large_json (Json):
-            Large JSON writer
+        small_yaml (Yaml):
+            Small YAML writer
+        large_yaml (Yaml):
+            Large YAML writer
         small_size (int):
             Maximum file size to qualify as a small file
         large_size (int):
@@ -82,13 +77,13 @@ def write_json(
     """
     duplications.sort()
 
-    if small_json is None and large_json is None:
-        dup_json.write(duplications, "duplications")
+    if small_yaml is None and large_yaml is None:
+        dup_yaml.write(duplications, "duplications")
         return
 
     duplication_iter = iter(duplications)
 
-    if small_json is not None:
+    if small_yaml is not None:
         small_duplications: list[Duplication] = []
         not_small_duplications: list[Duplication] = []
 
@@ -99,11 +94,11 @@ def write_json(
             else:
                 small_duplications.append(duplication)
 
-        small_json.write(small_duplications, "small duplications")
+        small_yaml.write(small_duplications, "small duplications")
 
         duplication_iter = iter(not_small_duplications + list(duplication_iter))
 
-    if large_json is not None:
+    if large_yaml is not None:
         large_duplications: list[Duplication] = []
         not_large_duplications: list[Duplication] = []
 
@@ -114,10 +109,10 @@ def write_json(
             else:
                 not_large_duplications.append(duplication)
 
-        large_json.write(
+        large_yaml.write(
             large_duplications + list(duplication_iter), "large duplications"
         )
 
         duplication_iter = iter(not_large_duplications)
 
-    dup_json.write(list(duplication_iter), "duplications left")
+    dup_yaml.write(list(duplication_iter), "duplications left")

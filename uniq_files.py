@@ -1,8 +1,8 @@
-#!/usr/bin/env python3.9
+#!/usr/bin/env python3.10
 
 from src.data.file_stat import FileStat
 from src.parse_argv import parse_argv
-from src.storage.json_ import write_json
+from src.storage.yaml_ import write_dup
 from src.tree import make_tree, walk_tree
 from src.utils.progress import TotalTime
 
@@ -38,11 +38,11 @@ def main():
         args.empty_txt.write(empty_dirs, "empty directory paths")
 
     # Write duplication data
-    write_json(
+    write_dup(
         duplications,
-        args.dup_json,
-        small_json=args.small_json,
-        large_json=args.large_json,
+        args.dup_yaml,
+        small_yaml=args.small_yaml,
+        large_yaml=args.large_yaml,
         small_size=args.small_size,
         large_size=args.large_size,
     )

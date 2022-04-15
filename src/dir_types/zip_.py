@@ -12,18 +12,21 @@ import zipfile
 from datetime import datetime
 from pathlib import Path
 from posixpath import dirname
-from typing import Iterator, Optional
+from typing import TYPE_CHECKING
 
 from progbar import clear_print_clearable, shrink_str
 
+from src.data.file_stat import FileStat
+from src.utils.progress import ETA, Progress
 from .common import BasePath
 from .utils.check_whitelist import check_dir, check_file
 from .utils.error import InvalidDirectoryType
-from ..data.file_stat import FileStat
-from ..utils.progress import ETA, Progress
+
+if TYPE_CHECKING:
+    from typing import IO, Iterator, Optional
 
 
-class ZipPath(zipfile.Path, BasePath):
+class ZipPath(BasePath, zipfile.Path):
     """
     Zip path
 
@@ -38,7 +41,7 @@ class ZipPath(zipfile.Path, BasePath):
             Actual zip file object
 
     Public Methods:
-        iterdir:
+        iter:
             Emulates `zipfile.Path.iterdir`, slightly changed to avoid circular
             function calls
     """
@@ -62,8 +65,8 @@ class ZipPath(zipfile.Path, BasePath):
          - Get file stats
         """
         clear_print_clearable(shrink_str(str(self)))
-        self.filtered_dirs: list[ZipPath] = []
-        self.filtered_files: list[ZipPath] = []
+        self.filtered_dirs = []
+        self.filtered_files = []
         self._filter_paths()
         self._get_stats()
 
@@ -74,14 +77,13 @@ class ZipPath(zipfile.Path, BasePath):
         if not self.is_dir():
             return
 
-        for subpath in self.iterdir():
+        for subpath in self.iter():
             if subpath.is_dir():
                 if check_dir(subpath):
                     self.filtered_dirs.append(subpath)
-
-            else:
-                if check_file(subpath):
-                    self.filtered_files.append(subpath)
+                continue
+            if check_file(subpath):
+                self.filtered_files.append(subpath)
 
     def _get_stats(self) -> None:
         """
@@ -89,23 +91,24 @@ class ZipPath(zipfile.Path, BasePath):
         """
         if self.is_dir():
             self.dir_get_stats()
-        else:
-            if self.root is None:
-                raise ValueError("Can't iterdir a closed zip file")
-            info = self.root.getinfo(self.at)
-            self.size = info.file_size
-            date_time = (
-                info.date_time[0],
-                month if (month := info.date_time[1]) else 1,
-                day if (day := info.date_time[2]) else 1,
-                info.date_time[3],
-                info.date_time[4],
-                info.date_time[5],
-            )
-            self.mtime = datetime(*date_time).timestamp()
-            self.length = 1
+            return
 
-    def iterdir(self) -> Iterator[ZipPath]:
+        if self.root is None:
+            raise ValueError("Can't iterdir a closed zip file")
+        info = self.root.getinfo(self.at)
+        self.size = info.file_size
+        date_time = (
+            info.date_time[0],
+            month if (month := info.date_time[1]) else 1,
+            day if (day := info.date_time[2]) else 1,
+            info.date_time[3],
+            info.date_time[4],
+            info.date_time[5],
+        )
+        self.mtime = datetime(*date_time).timestamp()
+        self.length = 1
+
+    def iter(self) -> Iterator[ZipPath]:
         """
         Emulates `zipfile.Path.iterdir`, slightly changed to avoid circular
             function calls
@@ -113,7 +116,7 @@ class ZipPath(zipfile.Path, BasePath):
         if not self.is_dir():
             raise ValueError("Can't listdir a file")
         if self.root is None:
-            raise ValueError("Can't iterdir a closed zip file")
+            raise ValueError("Can't iter a closed zip file")
         subs = filter(self._is_child_str, sorted(self.root.namelist()))
         return map(self._next, subs)
 
@@ -122,6 +125,15 @@ class ZipPath(zipfile.Path, BasePath):
 
     def _is_child_str(self, path_str: str):
         return dirname(path_str.rstrip("/")) == self.at.rstrip("/")
+
+    def is_dir_(self) -> bool:
+        return self.is_dir()
+
+    def is_file_(self) -> bool:
+        return self.is_file()
+
+    def open_file(self) -> IO[bytes]:
+        return self.open("rb")
 
 
 class RootZipPath(ZipPath):
