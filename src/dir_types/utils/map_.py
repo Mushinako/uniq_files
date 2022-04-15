@@ -7,9 +7,12 @@ Public Constants:
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from src.dir_types.zip_ import RootZipPath
 
-_UnionRootPathTypeNoDir = type[RootZipPath]
+if TYPE_CHECKING:
+    _UnionRootPathTypeNoDir = type[RootZipPath]
 
 DIRECTORY_EXT: dict[str, _UnionRootPathTypeNoDir] = {
     ".zip": RootZipPath,

@@ -12,9 +12,11 @@ Public Types:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-DatabaseRow = tuple[str, str, str, str, str]
-IdStat = tuple[int, str, str]
+if TYPE_CHECKING:
+    DatabaseRow = tuple[str, str, str, str, str]
+    IdStat = tuple[int, str, str]
 
 
 @dataclass

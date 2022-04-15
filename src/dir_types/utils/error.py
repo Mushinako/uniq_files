@@ -6,18 +6,16 @@ Public Classes:
     NotAFileError       : Operation only works on a file
 """
 
+from __future__ import annotations
+
 
 class InvalidDirectoryType(Exception):
     """
     Path is not a valid directory
     """
 
-    pass
-
 
 class NotAFileError(OSError):
     """
     Operation only works on a file
     """
-
-    pass

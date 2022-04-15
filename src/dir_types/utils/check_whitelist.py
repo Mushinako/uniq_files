@@ -22,7 +22,7 @@ def check_dir(path: BasePath) -> bool:
     Returns:
         (bool): Whether the path should be included; i.e., not in the whitelist
     """
-    return path.name not in WHITELIST.dirnames and str(path) not in WHITELIST.dirpaths
+    return path.name_ not in WHITELIST.dirnames and str(path) not in WHITELIST.dirpaths
 
 
 def check_file(path: BasePath) -> bool:
@@ -36,7 +36,7 @@ def check_file(path: BasePath) -> bool:
         (bool): Whether the path should be included; i.e., not in the whitelist
     """
     return (
-        path.name not in WHITELIST.filenames
+        path.name_ not in WHITELIST.filenames
         and (subpath_str := str(path)) not in WHITELIST.filepaths
         and not any(regex.fullmatch(subpath_str) for regex in WHITELIST.fileregexes)
     )

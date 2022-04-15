@@ -10,20 +10,21 @@ from __future__ import annotations
 
 import zipfile
 from datetime import datetime
-from pathlib import Path
 from posixpath import dirname
 from typing import TYPE_CHECKING
 
 from progbar import clear_print_clearable, shrink_str
 
-from src.data.file_stat import FileStat
-from src.utils.progress import ETA, Progress
 from .common import BasePath
 from .utils.check_whitelist import check_dir, check_file
 from .utils.error import InvalidDirectoryType
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import IO, Iterator, Optional
+
+    from src.data.file_stat import FileStat
+    from src.utils.progress import ETA, Progress
 
 
 class ZipPath(BasePath, zipfile.Path):
@@ -134,6 +135,10 @@ class ZipPath(BasePath, zipfile.Path):
 
     def open_file(self) -> IO[bytes]:
         return self.open("rb")
+
+    @property
+    def name_(self) -> str:
+        return self.name
 
 
 class RootZipPath(ZipPath):

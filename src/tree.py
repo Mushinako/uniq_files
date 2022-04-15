@@ -7,16 +7,20 @@ Public Functions:
 """
 
 from collections import defaultdict
-from pathlib import Path
 from traceback import print_exc
+from typing import TYPE_CHECKING
 
 from progbar import clear_print
 
 from .data.duplication import Duplication
-from .data.file_stat import FileStat, IdStat
 from .dir_types.dir_ import DirPath
 from .utils.byte import byte_shorten
 from .utils.progress import ETA, Progress
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from .data.file_stat import FileStat, IdStat
 
 
 def make_tree(base_path: Path) -> DirPath:

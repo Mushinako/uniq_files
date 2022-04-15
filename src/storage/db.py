@@ -5,17 +5,21 @@ Public Classes:
     DB: Database I/O
 """
 
+from __future__ import annotations
+
 import sqlite3
 from contextlib import contextmanager
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from progbar import clear_print
 
-from src.data.file_stat import FileStat, DatabaseRow
+from src.data.file_stat import FileStat
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import Generator
+
+    from src.data.file_stat import DatabaseRow
 
 
 class Db:

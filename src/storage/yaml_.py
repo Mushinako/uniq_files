@@ -8,13 +8,19 @@ Public Functions:
     write_jsons: Write JSON data into corresponding files
 """
 
-from pathlib import Path
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from progbar import clear_print
 from yaml import safe_dump
 
 from src.config import SMALL_SIZE, LARGE_SIZE
-from src.data.duplication import Duplication
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from src.data.duplication import Duplication
 
 
 class Yaml:

@@ -17,11 +17,13 @@ from progbar import clear_print_clearable, shrink_str
 
 from src.config import CHUNK_SIZE
 from src.data.file_stat import FileStat
-from src.utils.progress import ETA, Progress
+from src.utils.progress import Progress
 from .utils.error import NotAFileError
 
 if TYPE_CHECKING:
     from typing import Any, IO, Iterator
+
+    from src.utils.progress import ETA
 
 
 class BasePath(metaclass=ABCMeta):
@@ -243,4 +245,9 @@ class BasePath(metaclass=ABCMeta):
 
     @abstractmethod
     def open_file(self) -> IO[bytes]:
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def name_(self) -> str:
         raise NotImplementedError()

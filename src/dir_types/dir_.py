@@ -112,6 +112,10 @@ class DirPath(BasePath, Path):
     def open_file(self) -> IO[bytes]:
         return self.open("rb")
 
+    @property
+    def name_(self) -> str:
+        return self.name
+
 
 class _WindowsDirPath(DirPath, WindowsPath):
     """
